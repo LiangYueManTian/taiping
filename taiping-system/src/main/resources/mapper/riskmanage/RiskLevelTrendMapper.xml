@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.riskmanage.dao.RiskLevelTrendDao">
+    <!--批量插入风险等级趋势分析数据-->
+    <insert id="batchInsertLevelTrendData" parameterType="java.util.List">
+        INSERT INTO t_risk_level_trend(id,risk_level,risk_found_time,risk_count,add_number,ring_growth,process_instruction,activity_type) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.riskLevel},#{data.riskFoundTime},#{data.riskCount},#{data.addNumber},#{data.ringGrowth},#{data.processInstruction},#{data.activityType})
+        </foreach>
+    </insert>
+
+    <!--批量更新风险等级趋势分析数据-->
+    <update id="batchUpdateLevelTrendData" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            UPDATE t_risk_level_trend
+            <set>
+                <if test="item.riskCount != null">risk_count = #{item.riskCount},</if>
+                <if test="item.addNumber != null">add_number = #{item.addNumber},</if>
+                ring_growth = #{item.ringGrowth}
+            </set>
+            <where>
+                id = #{item.id}
+            </where>
+        </foreach>
+    </update>
+
+    <!--批量删除风险等级趋势分析数据-->
+    <delete id="batchDeleteLevelTrendData" parameterType="java.util.List">
+        DELETE FROM t_risk_level_trend WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--获取风险等级趋势分析数据-->
+    <select id="selectLevelTrendData" resultType="com.taiping.entity.riskmanage.RiskLevelTrend">
+        SELECT * FROM t_risk_level_trend
+    </select>
+</mapper>

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.capacity.dao.cabinet.BaseCabinetDao">
+
+
+    <!-- 机柜基础信息返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.cabinet.BaseCabinet">
+        <id column="cabinet_base_id" property="cabinetBaseId" />
+        <result column="cabinet_unique_name" property="cabinetUniqueName" />
+        <result column="floor" property="floor" />
+        <result column="device_type" property="deviceType" />
+        <result column="cabinet_name" property="cabinetName" />
+        <result column="rated_power" property="ratedPower" />
+        <result column="array_cabinet_design_load" property="arrayCabinetDesignLoad" />
+        <result column="array_cabinet_name" property="arrayCabinetName" />
+        <result column="floor_unique_name" property="floorUniqueName" />
+        <result column="cabinet_column" property="cabinetColumn" />
+        <result column="design_space_capacity" property="designSpaceCapacity" />
+        <result column="electric_reserve" property="electricReserve" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+
+    <!-- 机柜基础信息返回映射对象 -->
+    <resultMap extends="BaseResultMap" id="BaseCabinetDtoMap" type="com.taiping.bean.capacity.cabinet.dto.BaseCabinetDto" >
+
+    </resultMap>
+
+    <!--全部的列-->
+    <sql id="AllColumnList">
+      cabinet_base_id,    floor,    cabinet_name,   device_type,    cabinet_unique_name,
+      rated_power,        array_cabinet_design_load,    array_cabinet_name,
+      floor_unique_name,  cabinet_column,   design_space_capacity,  electric_reserve,
+      data_collection_time, create_user,  create_time
+    </sql>
+
+
+    <!-- 机柜基础信息where条件 -->
+    <sql id="whereBySqlForBaseCabinet">
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="bizCondition.floorList != null and bizCondition.floorList.size() > 0">
+            <if test="bizCondition.floorList.size() == 1">
+                AND floor =
+                <foreach collection="bizCondition.floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="bizCondition.floorList.size() > 1">
+                AND floor IN
+                <foreach collection="bizCondition.floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="bizCondition.floorUniqueNameList != null and bizCondition.floorUniqueNameList.size() > 0">
+            <if test="bizCondition.floorUniqueNameList.size() == 1">
+                AND floor_unique_name =
+                <foreach collection="bizCondition.floorUniqueNameList" item="floorUniqueName">
+                    #{floorUniqueName}
+                </foreach>
+            </if>
+            <if test="bizCondition.floorUniqueNameList.size() > 1">
+                AND floor_unique_name IN
+                <foreach collection="bizCondition.floorUniqueNameList" item="floorUniqueName" open="(" close=")" separator=",">
+                    #{floorUniqueName}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个功能区筛选条件 -->
+        <if test="bizCondition.deviceTypeList != null and bizCondition.deviceTypeList.size() > 0">
+            <if test="bizCondition.deviceTypeList.size() == 1">
+                AND device_type =
+                <foreach collection="bizCondition.deviceTypeList" item="deviceType">
+                    #{deviceType}
+                </foreach>
+            </if>
+            <if test="bizCondition.deviceTypeList.size() > 1">
+                AND device_type IN
+                <foreach collection="bizCondition.deviceTypeList" item="deviceType" open="(" close=")" separator=",">
+                    #{deviceType}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个机柜列筛选条件 -->
+        <if test="bizCondition.cabinetColumnList != null and bizCondition.cabinetColumnList.size() > 0">
+            <if test="bizCondition.cabinetColumnList.size() == 1">
+                AND cabinet_column =
+                <foreach collection="bizCondition.cabinetColumnList" item="cabinetColumn">
+                    #{cabinetColumn}
+                </foreach>
+            </if>
+            <if test="bizCondition.cabinetColumnList.size() > 1">
+                AND cabinet_column IN
+                <foreach collection="bizCondition.cabinetColumnList" item="cabinetColumn" open="(" close=")" separator=",">
+                    #{cabinetColumn}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个机柜筛选条件 -->
+        <if test="bizCondition.cabinetUniqueNameList != null and bizCondition.cabinetUniqueNameList.size() > 0">
+            <if test="bizCondition.cabinetUniqueNameList.size() == 1">
+                AND cabinet_unique_name =
+                <foreach collection="bizCondition.cabinetUniqueNameList" item="cabinetUniqueName">
+                    #{cabinetUniqueName}
+                </foreach>
+            </if>
+            <if test="bizCondition.cabinetUniqueNameList.size() > 1">
+                AND cabinet_unique_name IN
+                <foreach collection="bizCondition.cabinetUniqueNameList" item="cabinetUniqueName" open="(" close=")" separator=",">
+                    #{cabinetUniqueName}
+                </foreach>
+            </if>
+        </if>
+
+        <!--楼层条件筛选-->
+        <if test="bizCondition.floor != null and bizCondition.floor != ''">
+            AND floor = #{bizCondition.floor}
+        </if>
+
+        <!--楼层唯一标识条件筛选-->
+        <if test="bizCondition.floorUniqueName != null and bizCondition.floorUniqueName != ''">
+            AND floor_unique_name = #{bizCondition.floorUniqueName}
+        </if>
+
+        <!--功能区筛选条件-->
+        <if test="bizCondition.deviceType != null and bizCondition.deviceType != ''">
+            AND device_type = #{bizCondition.deviceType}
+        </if>
+
+        <!--机柜列筛选条件-->
+        <if test="bizCondition.cabinetColumn != null and bizCondition.cabinetColumn != ''">
+            AND cabinet_column LIKE CONCAT('%',#{bizCondition.cabinetColumn},'%')
+        </if>
+
+        <!--机柜筛选条件-->
+        <if test="bizCondition.cabinetUniqueName != null and bizCondition.cabinetUniqueName != ''">
+            AND cabinet_unique_name LIKE CONCAT('%',#{bizCondition.cabinetUniqueName},'%')
+        </if>
+
+        <!--pdu筛选条件-->
+        <if test="bizCondition.ratedPower != null and bizCondition.ratedPower != ''">
+            AND rated_power = #{bizCondition.ratedPower}
+        </if>
+    </sql>
+
+    <!--机柜基础信息共用sql-->
+    <sql id="orderBySql">
+        <!--排序-->
+        <if test="sortCondition.sortField != null and sortCondition.sortField != '' ">
+            <!--楼层-->
+            <if test="sortCondition.sortField == 'floor'">
+                ORDER BY floor
+            </if>
+            <!--机柜名称-->
+            <if test="sortCondition.sortField == 'cabinetName'">
+                ORDER BY cabinet_name
+            </if>
+            <!--设施类型-->
+            <if test="sortCondition.sortField == 'deviceType'">
+                ORDER BY device_type
+            </if>
+            <!--机柜唯一标识名称-->
+            <if test="sortCondition.sortField == 'cabinetUniqueName'">
+                ORDER BY cabinet_unique_name
+            </if>
+            <!--设计负荷-->
+            <if test="sortCondition.sortField == 'ratedPower'">
+                ORDER BY rated_power
+            </if>
+            <!--列头柜设计总负荷-->
+            <if test="sortCondition.sortField == 'arrayCabinetDesignLoad'">
+                ORDER BY array_cabinet_design_load
+            </if>
+            <!--列头柜名称-->
+            <if test="sortCondition.sortField == 'arrayCabinetName'">
+                ORDER BY array_cabinet_name
+            </if>
+            <!--楼层唯一标识-->
+            <if test="sortCondition.sortField == 'floorUniqueName'">
+                ORDER BY floor_unique_name
+            </if>
+            <!--机柜列-->
+            <if test="sortCondition.sortField == 'cabinetColumn'">
+                ORDER BY cabinet_column
+            </if>
+            <!--设计u数-->
+            <if test="sortCondition.sortField == 'designSpaceCapacity'">
+                ORDER BY design_space_capacity
+            </if>
+            <!--是否是配电保留-->
+            <if test="sortCondition.sortField == 'electricReserve'">
+                ORDER BY electric_reserve
+            </if>
+            <!--数据采集时间-->
+            <if test="sortCondition.sortField == 'dataCollectionTime'">
+                ORDER BY data_collection_time
+            </if>
+            <!--创建时间-->
+            <if test="sortCondition.sortField == 'createTime'">
+                ORDER BY create_time
+            </if>
+            <!-- 字段排序 -->
+            <if test="sortCondition.sortRule != null and sortCondition.sortRule != ''">
+                ${sortCondition.sortRule}
+            </if>
+        </if>
+    </sql>
+
+
+    <!--查询基础基础信息最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="BaseCabinetDtoMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_base_cabinet
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+    <!-- 查询机柜基础信息列表数据 -->
+    <select id="queryBaseCabinetList" resultMap="BaseCabinetDtoMap" parameterType="com.taiping.entity.QueryCondition">
+        select
+        <include refid="AllColumnList"/>
+        from t_base_cabinet
+        where 1=1
+        <!-- 查询条件 -->
+        <include refid="whereBySqlForBaseCabinet"/>
+
+        <!-- 排序条件 -->
+        <include refid="orderBySql"/>
+        <if test="pageCondition.beginNum != null and pageCondition.pageSize != null">
+            LIMIT
+            #{pageCondition.beginNum},#{pageCondition.pageSize}
+        </if>
+    </select>
+
+    <!-- 查询机柜基础信息列表数据个数 -->
+    <select id="queryBaseCabinetCount" resultType="java.lang.Integer" parameterType="com.taiping.entity.QueryCondition">
+        select
+        count(*)
+        from t_base_cabinet
+        where 1=1
+        <!-- 查询条件 -->
+        <include refid="whereBySqlForBaseCabinet"/>
+    </select>
+
+    <!-- 批量新增基础机柜信息 -->
+    <insert id="insertBaseCabinetBatch" parameterType="java.util.List">
+      insert into t_base_cabinet
+      (
+        cabinet_base_id,
+        floor,
+        cabinet_name,
+        device_type,
+        cabinet_unique_name,
+        rated_power,
+        array_cabinet_design_load,
+        array_cabinet_name,
+        floor_unique_name,
+        cabinet_column,
+        design_space_capacity,
+        electric_reserve,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.cabinetBaseId},
+                #{item.floor},
+                #{item.cabinetName},
+                #{item.deviceType},
+                #{item.cabinetUniqueName},
+                #{item.ratedPower},
+                #{item.arrayCabinetDesignLoad},
+                #{item.arrayCabinetName},
+                #{item.floorUniqueName},
+                #{item.cabinetColumn},
+                #{item.designSpaceCapacity},
+                #{item.electricReserve},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增基础机柜信息 -->
+    <insert id="insertBaseCabinet" parameterType="com.taiping.entity.cabinet.BaseCabinet">
+      insert into t_base_cabinet
+      (
+        cabinet_base_id,
+        floor,
+        cabinet_name,
+        device_type,
+        cabinet_unique_name,
+        rated_power,
+        array_cabinet_design_load,
+        array_cabinet_name,
+        floor_unique_name,
+        cabinet_column,
+        design_space_capacity,
+        electric_reserve,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{cabinetBaseId},
+        #{floor},
+        #{cabinetName},
+        #{deviceType},
+        #{cabinetUniqueName},
+        #{ratedPower},
+        #{arrayCabinetDesignLoad},
+        #{arrayCabinetName},
+        #{floorUniqueName},
+        #{cabinetColumn},
+        #{designSpaceCapacity},
+        #{electricReserve},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 修改基础布线信息 -->
+    <update id="updateBaseCabinetByCabinetName" parameterType="com.taiping.entity.cabinet.BaseCabinet">
+        update
+        t_base_cabinet
+        <set>
+            <!--参数为机柜编码-->
+            <if test="cabinetUniqueName != null and cabinetUniqueName != ''">
+                cabinet_unique_name = #{cabinetUniqueName},
+            </if>
+            <!--设备类型-->
+            <if test="deviceType != null and deviceType != ''" >
+                device_type = #{deviceType},
+            </if>
+            <!--是否是配电保留-->
+            <if test="electricReserve != null and electricReserve != ''">
+                electric_reserve = #{electricReserve},
+            </if>
+        </set>
+        where 1=1
+        <!-- 参数为机柜编码 -->
+        <if test="cabinetUniqueName != null and cabinetUniqueName != ''">
+            AND cabinet_unique_name = #{cabinetUniqueName}
+        </if>
+    </update>
+
+
+    <!-- 删除全部机柜基础信息 -->
+    <delete id="deleteAllBaseCabinet">
+        delete from t_base_cabinet
+    </delete>
+
+</mapper>

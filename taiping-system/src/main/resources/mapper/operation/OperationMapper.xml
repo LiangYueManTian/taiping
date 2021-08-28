@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.operation.dao.OperationDao">
+
+    <!--批量保存柴发sheet数据-->
+    <insert id="saveImportChaiFa" parameterType="list">
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO t_chai_fa (
+            t_id,
+            order_num,
+            chai_fa_name,
+            coolant_level_status,
+            water_temperature,
+            oil_level_status,
+            oil_supply_line_status,
+            battery_voltage_A1,
+            battery_voltage_A2,
+            battery_voltage_B1,
+            battery_voltage_B2,
+            resistance_A1,
+            resistance_A2,
+            resistance_B1,
+            resistance_B2,
+            oil_level_daily,
+            oil_level_outdoor_one,
+            oil_level_outdoor_two,
+            curr_load_residue_oil_time,
+            residue_full_load_oil_time,
+            chai_fa_controller_status,
+            chai_fa_test_vol_status,
+            chai_fa_test_ele_status,
+            fuel_feedi_controller_status,
+            min_water_temperature,
+            max_water_temperature,
+            min_battery_voltage,
+            max_battery_voltage,
+            min_resistance,
+            max_resistance,
+            min_oil_level_daily,
+            max_oil_level_daily,
+            min_oil_level_outdoor,
+            max_oil_level_outdoor,
+            create_time,
+            year,
+            month,
+            coolant_range,
+            test_ele_range,
+            test_vol_range,
+            min_load_residue_time,
+            max_load_residue_time,
+            is_delete
+            )
+            VALUES
+            (
+            #{item.tId},
+            #{item.orderNum},
+            #{item.chaiFaName},
+            #{item.coolantLevelStatus},
+            #{item.waterTemperature},
+            #{item.oilLevelStatus},
+            #{item.oilSupplyLineStatus},
+            #{item.batteryVoltageA1},
+            #{item.batteryVoltageA2},
+            #{item.batteryVoltageB1},
+            #{item.batteryVoltageB2},
+            #{item.resistanceA1},
+            #{item.resistanceA2},
+            #{item.resistanceB1},
+            #{item.resistanceB2},
+            #{item.oilLevelDaily},
+            #{item.oilLevelOutdoorOne},
+            #{item.oilLevelOutdoorTwo},
+            #{item.currLoadResidueOilTime},
+            #{item.residueFullLoadOilTime},
+            #{item.chaiFaControllerStatus},
+            #{item.chaiFaTestVolStatus},
+            #{item.chaiFaTestEleStatus},
+            #{item.fuelFeediControllerStatus},
+            #{item.minWaterTemperature},
+            #{item.maxWaterTemperature},
+            #{item.minBatteryVoltage},
+            #{item.maxBatteryVoltage},
+            #{item.minResistance},
+            #{item.maxResistance},
+            #{item.minOilLevelDaily},
+            #{item.maxOilLevelDaily},
+            #{item.minOilLevelOutdoor},
+            #{item.maxOilLevelOutdoor},
+            #{item.createTime},
+            #{item.year},
+            #{item.month},
+            #{item.coolantRange},
+            #{item.testEleRange},
+            #{item.testVolRange},
+            #{item.minLoadResidueTime},
+            #{item.maxLoadResidueTime},
+            0)
+        </foreach>
+
+    </insert>
+
+    <!--批量保存高压柜数据-->
+    <insert id="saveImportDistHighCabinet" parameterType="list">
+
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO t_dist_high_cabinet (
+            t_id,
+            order_num,
+            line_name,
+            power_num,
+            name,
+            state,
+            voltage_L1,
+            voltage_L2,
+            voltage_L3,
+            electric_L1,
+            electric_L2,
+            electric_L3,
+            cabinet_smell_status,
+            cabinet_lamp_status,
+            dc_panel_voltage_a,
+            dc_panel_voltage_b,
+            dc_panel_voltage_a_order_num,
+            dc_panel_internal_a,
+            dc_panel_internal_b,
+            remark,
+            create_time,
+            min_voltage,
+            max_voltage,
+            min_dc_voltage,
+            max_dc_voltage,
+            year,
+            month,
+            min_electric,
+            max_electric,
+            dc_panel_voltage_b_order_num,
+            is_delete
+            )
+            VALUES(
+            #{item.tId},
+            #{item.orderNum},
+            #{item.lineName},
+            #{item.powerNum},
+            #{item.name},
+            #{item.state},
+            #{item.voltageL1},
+            #{item.voltageL2},
+            #{item.voltageL3},
+            #{item.electricL1},
+            #{item.electricL2},
+            #{item.electricL3},
+            #{item.cabinetSmellStatus},
+            #{item.cabinetLampStatus},
+            #{item.dcPanelVoltageA},
+            #{item.dcPanelVoltageB},
+            #{item.dcPanelVoltageAOrderNum},
+            #{item.dcPanelInternalA},
+            #{item.dcPanelInternalB},
+            #{item.remark},
+            #{item.createTime},
+            #{item.minVoltage},
+            #{item.maxVoltage},
+            #{item.minDcVoltage},
+            #{item.maxDcVoltage},
+            #{item.year},
+            #{item.month},
+            #{item.minElectric},
+            #{item.maxElectric},
+            #{item.dcPanelVoltageBOrderNum},
+            0
+            )
+
+
+        </foreach>
+    </insert>
+
+    <!--批量保存低压柜数据-->
+    <insert id="saveImportDistLowCabinet" parameterType="list">
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO t_dist_low_cabinet (
+            t_id,
+            order_num,
+            position,
+            power_name,
+            env_temperature,
+            cabinet_smell_status,
+            switching_state,
+            cabinet_lamp_status,
+            line_temperature_status,
+            earthing_status,
+            cabinet_door_status,
+            env_clear_status,
+            remark,
+            min_env_temperature,
+            max_env_temperature,
+            month,
+            year,
+            create_time,
+            is_delete
+            )VALUES
+            (
+            #{item.tId},
+            #{item.orderNum},
+            #{item.position},
+            #{item.powerName},
+            #{item.envTemperature},
+            #{item.cabinetSmellStatus},
+            #{item.switchingState},
+            #{item.cabinetLampStatus},
+            #{item.lineTemperatureStatus},
+            #{item.earthingStatus},
+            #{item.cabinetDoorStatus},
+            #{item.envClearStatus},
+            #{item.remark},
+            #{item.minEnvTemperature},
+            #{item.maxEnvTemperature},
+            #{item.month},
+            #{item.year},
+            #{item.createTime},
+            0
+            )
+
+        </foreach>
+
+    </insert>
+
+    <!--批量保存变压器数据-->
+    <insert id="saveImportTransformer" parameterType="list">
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO t_transformer (
+            t_id,
+            order_num,
+            transformer_name,
+            voltage_L1,
+            voltage_L2,
+            voltage_L3,
+            electric_L1,
+            electric_L2,
+            electric_L3,
+            active_power,
+            core_temperature_a,
+            fan_status,
+            cabinet_smell_status,
+            remark,
+            core_temperature_b,
+            core_temperature_c,
+            core_temperature_d,
+            min_core_temperature_one,
+            max_core_temperature_one,
+            min_core_temperature_two,
+            max_core_temperature_two,
+            min_voltage,
+            max_voltage,
+            min_electric,
+            max_electric,
+            create_time,
+            year,
+            month,
+            is_delete
+            )
+            VALUES
+            (
+            #{item.tId},
+            #{item.orderNum},
+            #{item.transformerName},
+            #{item.voltageL1},
+            #{item.voltageL2},
+            #{item.voltageL3},
+            #{item.electricL1},
+            #{item.electricL2},
+            #{item.electricL3},
+            #{item.activePower},
+            #{item.coreTemperatureA},
+            #{item.fanStatus},
+            #{item.cabinetSmellStatus},
+            #{item.remark},
+            #{item.coreTemperatureB},
+            #{item.coreTemperatureC},
+            #{item.coreTemperatureD},
+            #{item.minCoreTemperatureOne},
+            #{item.maxCoreTemperatureOne},
+            #{item.minCoreTemperatureTwo},
+            #{item.maxCoreTemperatureTwo},
+            #{item.minVoltage},
+            #{item.maxVoltage},
+            #{item.minElectric},
+            #{item.maxElectric},
+            #{item.createTime},
+            #{item.year},
+            #{item.month},
+            0
+            )
+        </foreach>
+
+    </insert>
+
+    <!--检测是否导入Excel-->
+    <select id="checkImportExcel" resultType="java.lang.Integer">
+        SELECT count(*)
+FROM
+	t_power_import_status t
+WHERE
+	t.sheet_type = #{sheetType}
+	AND t.import_month=#{importMonth}
+	and t.import_year=#{importYear}
+    </select>
+
+
+    <!--删除变压器数据-->
+    <delete id="deleteTransByCondition">
+        update  t_transformer   set is_delete=1 where month =#{month} and year =#{year}
+    </delete>
+
+    <!--删除低压柜数据-->
+    <delete id="deleteDistLowByCondition">
+        update t_dist_low_cabinet  set is_delete=1  where month =#{month} and year =#{year}
+    </delete>
+    <!--删除压高器数据-->
+    <delete id="deleteDistHighByCondition">
+      update t_dist_high_cabinet  set is_delete=1 where month =#{month} and year =#{year}
+    </delete>
+    <!--删除柴发数据-->
+    <delete id="deleteChaiFaByCondition">
+        update t_chai_fa   set is_delete=1  where month =#{month} and year =#{year}
+    </delete>
+
+    <!--查询变压器数据-->
+    <select id="queryTransFormerData" resultType="com.taiping.entity.operation.Transformer">
+        SELECT*from t_transformer where is_delete=0
+        <if test="month!=null">
+            and month=#{month}
+        </if>
+        <if test="year!=null">
+            and year=#{year}
+        </if>
+        order by order_num asc;
+    </select>
+
+    <!--查询柴发数据-->
+    <select id="queryChaiFaData" resultType="com.taiping.entity.operation.ChaiFa">
+        SELECT*from t_chai_fa where is_delete=0
+        <if test="month!=null">
+            and month=#{month}
+        </if>
+        <if test="year!=null">
+            and year=#{year}
+        </if>
+        order by order_num asc;
+    </select>
+
+
+    <!--查询高压柜数据-->
+    <select id="queryDistHighData" resultType="com.taiping.entity.operation.DistHighCabinet">
+        SELECT*from t_dist_high_cabinet where is_delete=0
+        <if test="month!=null">
+            and month=#{month}
+        </if>
+        <if test="year!=null">
+            and year=#{year}
+        </if>
+        order by order_num ,dc_panel_voltage_a_order_num asc;
+    </select>
+
+    <!--查询低压柜数据-->
+    <select id="queryDistLowData" resultType="com.taiping.entity.operation.DistLowCabinet">
+        SELECT*from t_dist_low_cabinet where is_delete=0
+        <if test="month!=null">
+            and month=#{month}
+        </if>
+        <if test="year!=null">
+            and year=#{year}
+        </if>
+        order by order_num asc;
+    </select>
+
+    <!--保存导入数据Excel -->
+    <insert id="saveImportExcel">
+INSERT INTO t_power_import_status (`t_id`, `sheet_type`, `import_month`, `import_year`) VALUES
+(#{tId}, #{sheetType}, #{importMonth}, #{importYear})
+    </insert>
+
+    <!--删除导入Excel-->
+    <delete id="deleteImport">
+        DELETE  FROM  t_power_import_status
+        where import_month=#{importMonth} and import_year=#{importYear} and
+        sheet_type=#{sheetType}
+
+    </delete>
+    <select id="checkAllImportStatus" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+        t_power_import_status t
+        WHERE
+         t.import_month=#{importMonth}
+        and t.import_year=#{importYear}
+        AND
+        (t.sheet_type = 0
+OR t.sheet_type = 1
+or t.sheet_type = 2
+or t.sheet_type = 3)
+    </select>
+
+
+</mapper>

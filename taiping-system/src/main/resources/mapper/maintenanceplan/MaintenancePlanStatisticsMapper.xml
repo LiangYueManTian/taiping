@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.maintenanceplan.dao.MaintenancePlanStatisticsDao">
+    <insert id="batchInsertData" parameterType="java.util.List">
+        INSERT INTO t_maintenance_plan_statistics(`id`,`system`,`delay_total_num`,`delay_one_to_two_period_num`,`delay_two_period_upper_num`,`delay_one_to_two_month_num`,`delay_two_month_upper_num`,`statistics_time`) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.system},#{data.delayTotalNum},#{data.delayOneToTwoPeriodNum},#{data.delayTwoPeriodUpperNum},#{data.delayOneToTwoMonthNum},#{data.delayTwoMonthUpperNum},#{data.statisticsTime})
+        </foreach>
+    </insert>
+
+    <select id="getMaintenancePlanStatisticsDataByMonth" parameterType="java.lang.Long" resultType="com.taiping.entity.maintenanceplan.MaintenancePlanStatistics">
+        SELECT  * FROM t_maintenance_plan_statistics WHERE statistics_time = #{monthTime} ORDER BY system ASC
+    </select>
+
+    <delete id="batchDeleteData" parameterType="java.util.List">
+        DELETE FROM t_maintenance_plan_statistics WHERE id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+</mapper>

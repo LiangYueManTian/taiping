@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.system.dao.SystemDao">
+
+    <!--查询阈值设定-->
+    <select id="queryAllSystemCode" resultType="com.taiping.entity.system.SystemSetting">
+        SELECT * FROM
+	t_system_setting t
+ORDER By `code`
+    </select>
+
+    <!--修改阈值-->
+    <update id="updateSystemCodeValue" parameterType="list">
+
+        <foreach collection="list" item="item" open="" close="" separator=";" index="index">
+            update t_system_setting set
+            value=#{item.value}
+            <if test="item.checkStatus!=null">
+                ,check_status=#{item.checkStatus}
+            </if>
+            where code=#{item.code}
+        </foreach>
+
+    </update>
+
+    <!--获取最大值Code 码-->
+    <select id="getChildMaxCodeByParentCode" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+	max(CAST(CODE AS UNSIGNED INTEGER) )
+FROM
+	t_system_input
+WHERE
+	parent_code = #{parentCode}
+    </select>
+
+    <!--删除input 框-->
+    <delete id="deleteInputCode" parameterType="java.lang.String">
+        update t_system_input set is_delete='1' where code=#{code}
+    </delete>
+
+    <!--查询input框的信息-->
+    <select id="queryAllInputInfo"
+            resultType="com.taiping.entity.system.SystemInputSetting">
+        select*from  t_system_input where is_delete='0'
+    </select>
+
+    <!--保存信息-->
+    <insert id="saveInputInfo" parameterType="list">
+        insert into t_system_input (
+        id,code,code_name,parent_code,is_delete
+        )values(
+        #{id},
+        #{code},
+        #{codeName},
+        #{parentCode},
+        0
+        )
+    </insert>
+
+    <!--修改input 信息-->
+    <update id="updateInputInfo" parameterType="com.taiping.entity.system.SystemInputSetting">
+        update t_system_input set is_delete='0'
+        <if test="codeName!=null">
+            ,code_name=#{codeName}
+        </if>
+        where code=#{code}
+    </update>
+
+    <!--获取预算模板-->
+    <select id="queryBudgetTemp" resultType="com.taiping.entity.system.BudgetTemp">
+      select*from t_budget_purchase_tl t ORDER BY t.`is_order`
+    </select>
+
+    <!--修改预算模板-->
+    <update id="updateBudgetTemp" parameterType="list">
+        <foreach collection="list" item="item" open="" close="" separator=";" index="index">
+            update t_budget_purchase_tl set
+            NAME =#{item.name}
+            <if test="item.checkFlag!=null">
+                ,check_flag=#{item.checkFlag}
+            </if>
+            where tid=#{item.id} and is_delete='0'
+        </foreach>
+    </update>
+
+    <!--删除预算模板-->
+    <delete id="deleteBudgetTemp" parameterType="java.lang.String">
+         update t_budget_purchase_tl set is_delete= '1' where tid=#{budgetTempId}
+    </delete>
+    <!--保存预算模板-->
+    <insert id="saveBudgetTemp" parameterType="com.taiping.entity.system.BudgetTemp">
+        insert into t_budget_purchase_tl (
+        tid,name,is_order,check_flag,is_delete
+        )values(
+        #{id},
+        #{name},
+        #{isOrder},
+        #{checkFlag},
+        0
+        )
+    </insert>
+
+    <!-- 判断子集是否被删除-->
+    <select id="checkInputByCode" resultType="java.lang.Integer">
+         SELECT count(*)from t_system_input t where t.parent_code =#{code} and is_delete=0
+    </select>
+
+</mapper>

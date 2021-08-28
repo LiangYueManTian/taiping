@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.capacity.dao.cabling.GenericCablingDao">
+
+    <!-- 综合布线信息返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.cabling.GenericCabling">
+        <id column="generic_cabling_id" property="genericCablingId" />
+        <result column="cable_type" property="cableType" />
+        <result column="generic_cabling_type" property="genericCablingType" />
+        <result column="cabinet_unique_name" property="cabinetUniqueName" />
+        <result column="connect_rack_code" property="connectRackCode" />
+        <result column="used_weight" property="usedWeight" />
+        <result column="location" property="location" />
+        <result column="port" property="port" />
+        <result column="opposite_end_cabinet_name" property="oppositeEndCabinetName" />
+        <result column="opposite_end_rack_code" property="oppositeEndRackCode" />
+        <result column="opposite_used_weight" property="oppositeUsedWeight" />
+        <result column="opposite_location" property="oppositeLocation" />
+        <result column="opposite_end_port" property="oppositeEndPort" />
+        <result column="extent" property="extent" />
+        <result column="status" property="status" />
+        <result column="month" property="month" />
+        <result column="year" property="year" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 综合布线map -->
+    <resultMap id="GenericCablingMap" extends="BaseResultMap" type="com.taiping.bean.capacity.cabling.dto.GenericCablingDto">
+    </resultMap>
+
+    <!-- 表的全部字段 -->
+    <sql id="AllColumnList">
+        generic_cabling_id, cable_type, generic_cabling_type,
+        cabinet_unique_name,  connect_rack_code,  used_weight,
+        location, port, opposite_end_cabinet_name,
+        opposite_end_rack_code, opposite_used_weight, opposite_location,
+        opposite_end_port,  extent, status,
+        month,  year, data_collection_time, is_deleted,
+        create_user,  create_time,  update_user,  update_time
+    </sql>
+
+    <!-- 综合布线信息where条件 -->
+    <sql id="whereBySqlForGenericCabling">
+        <!-- 选择多个线缆类型集合 -->
+        <if test="bizCondition.cableTypeList != null and bizCondition.cableTypeList.size() > 0">
+            <if test="bizCondition.cableTypeList.size() == 1">
+                AND cable_type =
+                <foreach collection="bizCondition.cableTypeList" item="cableType">
+                    #{cableType}
+                </foreach>
+            </if>
+            <if test="bizCondition.cableTypeList.size() > 1">
+                AND cable_type IN
+                <foreach collection="bizCondition.cableTypeList" item="cableType" open="(" close=")" separator=",">
+                    #{cableType}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个综合布线类型筛选条件 -->
+        <if test="bizCondition.genericCablingTypeList != null and bizCondition.genericCablingTypeList.size() > 0">
+            <if test="bizCondition.genericCablingTypeList.size() == 1">
+                AND generic_cabling_type =
+                <foreach collection="bizCondition.genericCablingTypeList" item="genericCablingType">
+                    #{genericCablingType}
+                </foreach>
+            </if>
+            <if test="bizCondition.genericCablingTypeList.size() > 1">
+                AND generic_cabling_type IN
+                <foreach collection="bizCondition.genericCablingTypeList" item="genericCablingType" open="(" close=")" separator=",">
+                    #{genericCablingType}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 时间筛选条件 -->
+        <if test="bizCondition.startTime != null and bizCondition.endTime != null">
+            <!--数据采集时间-->
+            AND create_time between
+            #{bizCondition.startTime}
+            and
+            #{bizCondition.endTime}
+        </if>
+
+        <!--线缆类型-->
+        <if test="bizCondition.cableType != null and bizCondition.cableType != ''">
+            AND cable_type = #{bizCondition.cableType}
+        </if>
+
+        <!--综合布线类型-->
+        <if test="bizCondition.genericCablingType != null and bizCondition.genericCablingType" >
+            AND generic_cabling_type LIKE CONCAT('%',#{bizCondition.genericCablingType},'%')
+        </if>
+    </sql>
+
+    <!--综合布线排序条件公用sql-->
+    <sql id="orderBySql">
+        <!--排序-->
+        <if test="sortCondition.sortField != null and sortCondition.sortField != '' ">
+            <!--线缆类型-->
+            <if test="sortCondition.sortField == 'cableType'">
+                ORDER BY cable_type
+            </if>
+            <!--综合布线类型-->
+            <if test="sortCondition.sortField == 'genericCablingType'">
+                ORDER BY generic_cabling_type
+            </if>
+            <!--本端配线架编号-->
+            <if test="sortCondition.sortField == 'connectRackCode'">
+                ORDER BY connect_rack_code
+            </if>
+            <!--机柜唯一标识-->
+            <if test="sortCondition.sortField == 'cabinetUniqueName'">
+                ORDER BY cabinet_unique_name
+            </if>
+            <!--本端u数-->
+            <if test="sortCondition.sortField == 'usedWeight'">
+                ORDER BY used_weight
+            </if>
+            <!--本端配线架位置-->
+            <if test="sortCondition.sortField == 'location'">
+                ORDER BY location
+            </if>
+            <!--本端端口-->
+            <if test="sortCondition.sortField == 'port'">
+                ORDER BY port
+            </if>
+            <!--对端机柜唯一标识-->
+            <if test="sortCondition.sortField == 'oppositeEndCabinetName'">
+                ORDER BY opposite_end_cabinet_name
+            </if>
+            <!--综合布线集合-->
+            <if test="sortCondition.sortField == 'oppositeEndRackCode'">
+                ORDER BY opposite_end_rack_code
+            </if>
+            <!--对端u数-->
+            <if test="sortCondition.sortField == 'oppositeUsedWeight'">
+                ORDER BY opposite_used_weight
+            </if>
+            <!--对端配线架位置-->
+            <if test="sortCondition.sortField == 'opposite_location'">
+                ORDER BY opposite_location
+            </if>
+            <!--对端端口-->
+            <if test="sortCondition.sortField == 'oppositeEndPort'">
+                ORDER BY opposite_end_port
+            </if>
+            <!--长度-->
+            <if test="sortCondition.sortField == 'extent'">
+                ORDER BY extent
+            </if>
+            <!--状态-->
+            <if test="sortCondition.sortField == 'status'">
+                ORDER BY status
+            </if>
+            <!--创建时间-->
+            <if test="sortCondition.sortField == 'createTime'">
+                ORDER BY create_time
+            </if>
+            <!-- 字段排序 -->
+            <if test="sortCondition.sortRule != null and sortCondition.sortRule != ''">
+                ${sortCondition.sortRule}
+            </if>
+        </if>
+    </sql>
+
+
+    <!--查询it能耗最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="GenericCablingMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_generic_cabling
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+
+    <!--查询综合布线配线架端口占用信息-->
+    <select id="queryCablingGroupByStatusAndRack" parameterType="com.taiping.bean.capacity.cabling.parameter.GenericCablingListParameter" resultType="com.taiping.bean.capacity.cabling.dto.CapacityCablingStatisticsDto">
+        select
+        cable_type 	as cableType, generic_cabling_type AS genericCablingType,
+        cabinet_unique_name as cabinetUniqueName,  connect_rack_code as connectRackCode,
+        count(1) as statusNumber, status, month,  year
+        from t_generic_cabling
+        where is_deleted = 0
+        <!--年份-->
+        <if test="year != null">
+            and year = #{year}
+        </if>
+        <!--月份-->
+        <if test="month != null">
+            and month = #{month}
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        group by cable_type, generic_cabling_type, connect_rack_code, status
+    </select>
+
+    <!--查询综合布线统计信息-->
+    <select id="queryCablingGroupByStatusAndDate" parameterType="com.taiping.bean.capacity.cabling.parameter.GenericCablingListParameter" resultType="com.taiping.bean.capacity.cabling.dto.CapacityCablingStatisticsDto">
+        select
+        cable_type 	as cableType, generic_cabling_type AS genericCablingType,
+        cabinet_unique_name as cabinetUniqueName,  connect_rack_code as connectRackCode,
+        count(1) as statusNumber, status, month,  year
+        from t_generic_cabling
+        where is_deleted = 0
+        <!--年份-->
+        <if test="year != null">
+          and year = #{year}
+        </if>
+        <!--月份-->
+        <if test="month != null">
+          and month = #{month}
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        group by cable_type, generic_cabling_type, year, month, status
+    </select>
+
+    <!--查询综合布线列表-->
+    <select id="queryGenericCablingList" resultMap="GenericCablingMap" parameterType="com.taiping.entity.QueryCondition">
+      select
+        <include refid="AllColumnList" />
+        from t_generic_cabling
+        where 1=1
+        <!-- 查询条件 -->
+        <include refid="whereBySqlForGenericCabling" />
+        <!-- 排序条件 -->
+        <include refid="orderBySql" />
+        <if test="pageCondition.beginNum != null and pageCondition.pageSize != null">
+            LIMIT
+            #{pageCondition.beginNum},#{pageCondition.pageSize}
+        </if>
+    </select>
+
+    <!--查询综合布线列表-->
+    <select id="queryGenericCablingCount" resultType="java.lang.Integer" parameterType="com.taiping.entity.QueryCondition">
+        select
+        count(*)
+        from t_generic_cabling
+        where 1=1
+        <!-- 查询条件 -->
+        <include refid="whereBySqlForGenericCabling" />
+    </select>
+
+
+    <!-- 批量新增综合布线信息 -->
+    <insert id="insertGenericCablingBatch" parameterType="java.util.List">
+      insert into t_generic_cabling
+      (
+        generic_cabling_id,
+        cable_type,
+        generic_cabling_type,
+        cabinet_unique_name,
+        connect_rack_code,
+        used_weight,
+        location,
+        port,
+        opposite_end_cabinet_name,
+        opposite_end_rack_code,
+        opposite_used_weight,
+        opposite_location,
+        opposite_end_port,
+        extent,
+        status,
+        month,
+        year,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.genericCablingId},
+                #{item.cableType},
+                #{item.genericCablingType},
+                #{item.cabinetUniqueName},
+                #{item.connectRackCode},
+                #{item.usedWeight},
+                #{item.location},
+                #{item.port},
+                #{item.oppositeEndCabinetName},
+                #{item.oppositeEndRackCode},
+                #{item.oppositeUsedWeight},
+                #{item.oppositeLocation},
+                #{item.oppositeEndPort},
+                #{item.extent},
+                #{item.status},
+                #{item.month},
+                #{item.year},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增综合布线信息 -->
+    <insert id="insertGenericCabling" parameterType="com.taiping.entity.cabling.GenericCabling">
+      insert into t_generic_cabling
+      (
+        generic_cabling_id,
+        cable_type,
+        generic_cabling_type,
+        cabinet_unique_name,
+        connect_rack_code,
+        used_weight,
+        location,
+        port,
+        opposite_end_cabinet_name,
+        opposite_end_rack_code,
+        opposite_used_weight,
+        opposite_location,
+        opposite_end_port,
+        extent,
+        status,
+        month,
+        year,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{genericCablingId},
+        #{cableType},
+        #{genericCablingType},
+        #{cabinetUniqueName},
+        #{connectRackCode},
+        #{usedWeight},
+        #{location},
+        #{port},
+        #{oppositeEndCabinetName},
+        #{oppositeEndRackCode},
+        #{oppositeUsedWeight},
+        #{oppositeLocation},
+        #{oppositeEndPort},
+        #{extent},
+        #{status},
+        #{month},
+        #{year},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 根据条件删除综合布线信息 -->
+    <delete id="deleteGenericCabling" parameterType="com.taiping.entity.cabling.GenericCabling">
+        delete from t_generic_cabling
+        where 1=1
+        <!--月份-->
+        <if test="month != null">
+            and month = #{month}
+        </if>
+        <!--年份-->
+        <if test="year != null">
+            and year = #{year}
+        </if>
+    </delete>
+
+</mapper>

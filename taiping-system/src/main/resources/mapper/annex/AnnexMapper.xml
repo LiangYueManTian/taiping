@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.annex.dao.AnnexDao">
+
+    <resultMap id="BaseMapper" type="com.taiping.entity.annex.Annex">
+        <id column="annex_id" property="annexId"/>
+        <result column="annex_name" property="annexName"/>
+        <result column="mode" property="mode"/>
+        <result column="annex_path" property="annexPath"/>
+        <result column="manage_id" property="manageId"/>
+        <result column="upload_time" property="uploadTime"/>
+    </resultMap>
+    <!--新增附件-->
+    <insert id="addAnnex" parameterType="com.taiping.entity.annex.Annex">
+        INSERT INTO t_annex
+        (
+        annex_id, annex_name, manage_id, mode, annex_path, upload_time
+        )
+        VALUES
+        (
+        #{annexId}, #{annexName}, #{manageId}, #{mode}, #{annexPath}, #{uploadTime}
+        )
+    </insert>
+
+    <!--删除附件-->
+    <delete id="deleteAnnex" parameterType="string">
+        DELETE FROM t_annex
+        WHERE annex_id = #{annexId}
+    </delete>
+
+    <select id="selectAnnexList"  parameterType="string" resultMap="BaseMapper">
+        SELECT annex_id, annex_name, annex_path, manage_id, upload_time
+        FROM t_annex WHERE manage_id = #{manageId}
+    </select>
+
+    <select id="queryAnnexByNameAndId" parameterType="com.taiping.entity.annex.Annex"
+            resultMap="BaseMapper">
+        SELECT annex_id FROM t_annex
+        WHERE manage_id = #{manageId} AND  annex_name = #{annexName} AND mode = #{mode}
+    </select>
+
+    <select id="queryAnnexByName" parameterType="com.taiping.entity.annex.Annex" resultType="java.lang.Integer">
+        SELECT COUNT(annex_id) FROM t_annex
+        WHERE   annex_name = #{annexName} AND mode = #{mode}
+    </select>
+
+    <select id="findAnnexById" parameterType="string" resultMap="BaseMapper">
+        SELECT annex_id, annex_name, annex_path, manage_id, upload_time
+        FROM t_annex WHERE annex_id = #{annexId}
+    </select>
+</mapper>

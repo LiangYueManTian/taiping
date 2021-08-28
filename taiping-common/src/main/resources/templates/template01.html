@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>告警邮件</title>
+</head>
+<body>
+您好,您的 <span th:text="${num}"/>服务器磁盘或内存达到危险值,请检查服务器内存和磁盘情况!<br/>
+告警时间：<span th:text="${time}"/><br/>
+
+
+</body>
+</html>

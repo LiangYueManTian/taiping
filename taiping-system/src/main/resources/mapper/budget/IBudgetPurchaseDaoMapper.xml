@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.budget.dao.IBudgetPurchaseDao">
+    <select id="getTemplate" resultType="com.taiping.biz.budget.dto.TBudgetPurchaseTlDto">
+        SELECT * FROM t_budget_purchase_tl tb
+        WHERE tb.is_delete = 0
+        ORDER BY tb.is_order
+    </select>
+
+    <select id="getTemplateById" resultType="com.taiping.biz.budget.dto.TBudgetPurchaseTlDto">
+        SELECT * FROM t_budget_purchase_tl tb
+        WHERE tid = #{templateId}
+    </select>
+
+    <update id="updateTemplate" parameterType="com.taiping.biz.budget.dto.TBudgetPurchaseTlDto">
+        UPDATE t_budget_purchase_tl tb SET
+        `name`=#{name},
+        `plan_need_time`=#{planNeedTime}
+        WHERE `tid`=#{tid}
+    </update>
+
+    <update id="deleteTemplate" parameterType="java.util.List">
+        UPDATE t_budget_purchase_tl tb SET is_deleted = 1 WHERE tid IN
+        <foreach collection="list" item="templateId" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </update>
+
+    <select id="findPurchaseByYear" resultType="com.taiping.biz.budget.dto.BudgetPurchaseDto">
+        SELECT * FROM t_budget_purchase tb
+        WHERE tb.purchase_year = #{year}
+    </select>
+
+    <insert id="add" parameterType="com.taiping.entity.budget.TBudgetPurchase">
+        INSERT INTO `t_budget_purchase` (
+          `tid`,
+          `budget_id`,
+          `pro_name`,
+          `pro_remark`,
+          `purchase_winning`,
+          `pro_leader`,
+          `budget_amount`,
+          `deal_amount`,
+          `payment_method`,
+          `payment_plan`,
+          `payment_warn_date`,
+          `invoice_submit`,
+          `purchase_year`,
+          `manage_id`,
+          `create_user`,
+          `create_date`,
+          `update_user`,
+          `update_date`
+        ) VALUES (
+          #{tid},
+          #{budgetId},
+          #{proName},
+          #{proRemark},
+          #{purchaseWinning},
+          #{proLeader},
+          #{budgetAmount},
+          #{dealAmount},
+          #{paymentMethod},
+          #{paymentPlan},
+          #{paymentWarnDate},
+          #{invoiceSubmit},
+          #{purchaseYear},
+          #{manageId},
+          #{createUser},
+          now(),
+          #{updateUser},
+          now()
+        );
+    </insert>
+
+    <update id="updatePurchase" parameterType="com.taiping.entity.budget.TBudgetPurchase">
+        update `t_budget_purchase` set
+          `pro_name`=#{proName},
+          `pro_remark`=#{proRemark},
+          `budget_amount`=#{budgetAmount},
+          `deal_amount`=#{dealAmount},
+          `purchase_winning`=#{purchaseWinning},
+          `pro_leader`=#{proLeader},
+          `payment_method`=#{paymentMethod},
+          `payment_plan`=#{paymentPlan},
+          `payment_warn_date`=#{paymentWarnDate},
+          `invoice_submit`=#{invoiceSubmit},
+          `update_user`=#{updateUser},
+          `update_date`=now()
+        where `tid`=#{tid}
+    </update>
+
+    <insert id="addPurchasePlan" parameterType="com.taiping.entity.budget.TBudgetPurchasePlan">
+        INSERT INTO `t_budget_purchase_plan` (
+          `tid`,
+          `purchase_id`,
+          `payment_ratio`,
+          `payment_amount`,
+          `payment_year`
+        ) VALUES (
+          #{tid},
+          #{purchaseId},
+          #{paymentRatio},
+          #{paymentAmount},
+          #{paymentYear}
+        );
+    </insert>
+
+    <insert id="addPurchaseItem" parameterType="com.taiping.entity.budget.TBudgetPurchaseItem">
+        INSERT INTO `t_budget_purchase_item` (
+          `tid`,
+          `purchase_id`,
+          `template_id`,
+          `plan_start_date`,
+          `plan_end_date`,
+          `create_user`,
+          `create_date`,
+          `update_user`,
+          `update_date`
+        ) VALUES (
+          #{tid},
+          #{purchaseId},
+          #{templateId},
+          #{planStartDate},
+          #{planEndDate},
+          #{createUser},
+          now(),
+          #{updateUser},
+          now()
+        );
+    </insert>
+
+    <update id="updateItem" parameterType="com.taiping.entity.budget.TBudgetPurchaseItem">
+        UPDATE `t_budget_purchase_item`
+        SET `plan_start_date` = #{planStartDate},
+            `plan_end_date` = #{planEndDate},
+            `act_start_date` = #{actStartDate},
+            `act_end_date` = #{actEndDate},
+            `status` = #{status},
+            `remark` = #{remark},
+            `update_user` = #{updateUser},
+            `update_date` = now()
+        WHERE `purchase_id` = #{purchaseId} AND `template_id` = #{templateId}
+    </update>
+
+    <select id="getPurchaseTableTemplate" resultType="com.taiping.entity.budget.TBudgetPurchaseTl">
+        SELECT tb4.* FROM (
+            SELECT DISTINCT tb2.template_id FROM t_budget_purchase tb1
+            RIGHT JOIN t_budget_purchase_item tb2 ON tb2.purchase_id=tb1.tid
+            WHERE tb1.purchase_year=#{year}
+        ) tb3
+        LEFT JOIN t_budget_purchase_tl tb4 ON tb4.tid=tb3.template_id
+        ORDER BY tb4.is_order ASC
+    </select>
+
+    <select id="getPurchaseTableItem" resultType="com.taiping.entity.budget.TBudgetPurchaseItem">
+        SELECT * FROM t_budget_purchase_item tb
+        WHERE tb.purchase_id = #{purchaseId}
+    </select>
+
+    <select id="getPurchaseTable" resultType="com.taiping.biz.budget.dto.BudgetPurchaseTableColDto">
+        SELECT tb2.*, tb1.*, tb3.* FROM t_budget_purchase_plan tb1
+        LEFT JOIN t_budget_purchase tb2 ON tb2.tid=tb1.purchase_id
+        LEFT JOIN t_budget tb3 ON tb3.tid=tb2.budget_id
+        WHERE tb1.payment_year=#{year}
+        ORDER BY tb2.create_date ASC
+    </select>
+
+    <select id="getPurchaseCountByUser" resultType="java.lang.Integer">
+        SELECT count(1) FROM t_budget_purchase tb
+        WHERE tb.create_user=#{userId}
+    </select>
+
+    <select id="getPurchaseListByUser" resultType="com.taiping.biz.budget.dto.BudgetPurchaseDto">
+        SELECT tb.* FROM t_budget_purchase tb
+        WHERE tb.create_user=#{userId}
+    </select>
+
+    <update id="updatePurchaseStatus">
+        UPDATE t_budget_purchase SET `status`='99'
+        WHERE tid=#{purchaseId} AND NOT EXISTS(
+            SELECT tb.purchase_id FROM t_budget_purchase_item tb
+            WHERE tb.purchase_id=#{purchaseId} AND tb.`status` != '99'
+        )
+    </update>
+
+    <select id="getYearList" resultType="java.lang.String">
+        SELECT DISTINCT tb.purchase_year FROM t_budget_purchase tb
+        ORDER BY tb.purchase_year
+    </select>
+
+    <select id="getPurchaseByPerson" resultType="com.taiping.biz.budget.dto.BudgetPurchaseDto">
+        select*from t_budget_purchase
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'proName' and filter.operator == 'like'">
+                            pro_name LIKE '%${filter.filterValue}%'
+                        </when>
+                        <when test="filter.filterField == 'createUser' and filter.operator == 'eq'">
+                            create_user = #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'updateDate'">
+                    ORDER BY update_date
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <!--个人工作台总数 -->
+    <select id="getPurchaseByPersonCount" resultType="java.lang.Integer">
+        select count(*) from t_budget_purchase
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'proName' and filter.operator == 'like'">
+                            pro_name LIKE '%${filter.filterValue}%'
+                        </when>
+                        <when test="filter.filterField == 'createUser' and filter.operator == 'eq'">
+                            create_user = #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+
+    </select>
+
+    <insert id="savePurchaseAnalysisReportData" parameterType="java.util.List">
+        INSERT INTO t_purchase_analysis_report(`tid`,`purchase_id`,`purchase_pro_name`,`budget_amount`,`deal_amount`,`manage_cause`,`manage_id`,`report_time`) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.tid},#{data.purchaseId},#{data.purchaseProName},#{data.budgetAmount},#{data.dealAmount},#{data.manageCause},#{data.manageId},#{data.reportTime})
+        </foreach>
+    </insert>
+
+    <select id="getPurchaseAnalysisDataByMonth" parameterType="java.lang.Long" resultType="com.taiping.entity.budget.PurchaseAnalysisReport">
+        SELECT  * FROM t_purchase_analysis_report WHERE report_time = #{monthTime} ORDER BY budget_amount ASC
+    </select>
+
+    <delete id="batchDeletePurchaseAnalysisData" parameterType="java.util.List">
+        DELETE FROM t_purchase_analysis_report WHERE tid IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.tid}
+        </foreach>
+    </delete>
+
+    <select id="getPurchaseItemByActivityId" parameterType="java.lang.String" resultType="com.taiping.biz.budget.dto.BudgetPurchaseDto">
+        SELECT * FROM t_budget_purchase WHERE manage_id = #{activityId}
+    </select>
+</mapper>

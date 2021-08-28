@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.budget.dao.IBudgetDao">
+    <insert id="add" parameterType="com.taiping.entity.budget.TBudget">
+        INSERT INTO `t_budget`(
+          `tid`,
+          `code`,
+          `name`,
+          `type`,
+          `cost_center`,
+          `amount`,
+          `classify`,
+          `kind`,
+          `budget_year`,
+          `cost_type`,
+          `cost_class`,
+          `create_user`,
+          `update_user`,
+          `create_time`,
+          `update_time`
+        )
+        VALUES (
+          #{tid},
+          #{code},
+          #{name},
+          #{type},
+          #{costCenter},
+          #{amount},
+          #{classify},
+          #{kind},
+          #{budgetYear},
+          #{costType},
+          #{costClass},
+          #{createUser},
+          #{updateUser},
+          now(),
+          now()
+        );
+    </insert>
+
+    <update id="updateBudget" parameterType="com.taiping.entity.budget.TBudget">
+        update `t_budget`
+          set `name`=#{name},
+          `type`=#{type},
+          `cost_center`=#{costCenter},
+          `amount`=#{amount},
+          `classify`=#{classify},
+          `kind`=#{kind},
+          `cost_type`=#{costType},
+          `cost_class`=#{costClass},
+          `update_user`=#{updateUser},
+          `update_time`=now()
+        where `tid`=#{tid}
+    </update>
+
+    <select id="selectByCode" resultType="com.taiping.biz.budget.dto.BudgetDto">
+        SELECT * FROM t_budget tb
+        WHERE tb.code=#{code}
+    </select>
+
+    <select id="findByYear" resultType="com.taiping.biz.budget.dto.BudgetDto">
+        SELECT * FROM t_budget tb
+        WHERE tb.budget_year=#{year}
+    </select>
+
+    <select id="findByYearTable" resultType="com.taiping.biz.budget.dto.BudgetTableRowDto">
+        <!--
+        SELECT * FROM t_budget tb
+        WHERE tb.budget_year=#{year}
+        UNION
+        SELECT tb1.* FROM t_budget_purchase tb
+        LEFT JOIN t_budget tb1 ON tb1.tid=tb.budget_id
+        WHERE tb.purchase_year=#{year} AND tb1.budget_year&lt;#{year}
+        -->
+        SELECT * FROM t_budget tb
+        WHERE tb.budget_year=#{year}
+        <if test="costType!=null">
+        and tb.cost_type=#{costType}
+        </if>
+        <if test="costClass!=null">
+        and tb.cost_class=#{costClass}
+        </if>
+        <if test="costCenter!=null">
+            and tb.cost_center like "%"#{costCenter}"%"
+        </if>
+
+        UNION
+        SELECT tb1.* FROM t_budget_purchase tb
+        LEFT JOIN t_budget tb1 ON tb1.tid=tb.budget_id
+        WHERE tb.purchase_year=#{year} AND tb1.budget_year&lt;#{year}
+        <if test="costType!=null">
+            and tb1.cost_type=#{costType}
+        </if>
+        <if test="costClass!=null">
+            and tb1.cost_class=#{costClass}
+        </if>
+        <if test="costCenter!=null">
+            and tb1.cost_center like "%"#{costCenter}"%"
+        </if>
+    </select>
+
+    <select id="getYearList" resultType="java.lang.String">
+        SELECT DISTINCT tb.budget_year FROM t_budget tb
+        ORDER BY tb.budget_year
+    </select>
+
+    <select id="getBudgetTotal" resultType="com.taiping.biz.budget.dto.BudgetTotalDto">
+        SELECT tb.*, (tb.purchase_total/budget_total) as ratio FROM (
+            SELECT
+            (SELECT sum(tb1.amount) from t_budget tb1 WHERE tb1.budget_year=#{year}) as budget_total,
+            (SELECT sum(tb2.deal_amount) FROM t_budget_purchase tb2 WHERE tb2.purchase_year=#{year}) as purchase_total FROM DUAL
+        ) tb
+    </select>
+
+    <select id="getBudgetAnalysis" resultType="com.taiping.biz.budget.dto.BudgetAnalysisDto">
+        SELECT tb1.tid, tb1.`code`, tb1.`name`, tb1.budget_year, tb1.amount, sum(tb2.deal_amount) as exec_total
+        FROM t_budget tb1
+        LEFT JOIN t_budget_purchase tb2 ON tb2.budget_id = tb1.tid
+        WHERE tb1.budget_year=#{year}
+        GROUP BY tb1.tid, tb1.`code`, tb1.`name`, tb1.budget_year, tb1.amount
+    </select>
+
+    <insert id="saveBudgetAnalysisReportData" parameterType="java.util.List">
+        INSERT INTO t_budget_analysis_report(`tid`,`analysis_object`,`budget_amount`,`deal_amount`,`ratio`,`surplus_amount`,`manage_id`,`is_year_budget`,`report_time`) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.tid},#{data.analysisObject},#{data.budgetAmount},#{data.dealAmount},#{data.ratio},#{data.surplusAmount},#{data.manageId},#{data.isYearBudget},#{data.reportTime})
+        </foreach>
+    </insert>
+
+    <select id="getBudgetAnalysisDataByMonth" parameterType="java.lang.Long" resultType="com.taiping.entity.budget.BudgetAnalysisReport">
+        SELECT  * FROM t_budget_analysis_report WHERE report_time = #{monthTime} ORDER BY ratio ASC
+    </select>
+
+    <delete id="batchDeleteAnalysisData" parameterType="java.util.List">
+        DELETE FROM t_budget_analysis_report WHERE tid IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.tid}
+        </foreach>
+    </delete>
+
+    <insert id="batchInsertBudgetStatisticsData" parameterType="java.util.List">
+        INSERT INTO t_budget_statistics(`id`,`statistics_object`,`ratio`,`statistics_time`,`is_year_budget`) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.statisticsObject},#{data.ratio},#{data.statisticsTime},#{data.isYearBudget})
+        </foreach>
+    </insert>
+
+    <delete id="batchDeleteBudgetStatisticsData" parameterType="java.util.List">
+        DELETE FROM t_budget_statistics WHERE tid IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+
+    <select id="getBudgetStatisticsDataByMonth" parameterType="java.lang.Long" resultType="com.taiping.entity.budget.BudgetStatistics">
+        SELECT  * FROM t_budget_statistics WHERE statistics_time = #{monthTime}
+    </select>
+
+    <select id="getAllStatisticsData" resultType="com.taiping.entity.budget.BudgetStatistics">
+        SELECT  * FROM t_budget_statistics ORDER BY statistics_time ASC
+    </select>
+
+    <insert id="batchInsertBudgetCurveData" parameterType="java.util.List">
+        INSERT INTO t_budget_analysis_curve(`id`,`statistics_object`,`ratio`,`statistics_time`,`is_year_budget`,`report_time`) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.statisticsObject},#{data.ratio},#{data.statisticsTime},#{data.isYearBudget},#{data.reportTime})
+        </foreach>
+    </insert>
+
+    <delete id="batchDeleteBudgetCurveData" parameterType="java.util.List">
+        DELETE FROM t_budget_analysis_curve WHERE tid IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+
+    <select id="getBudgetCurveDataByMonth" parameterType="java.lang.Long" resultType="com.taiping.entity.budget.BudgetAnalysisCurve">
+        SELECT  * FROM t_budget_analysis_curve WHERE report_time = #{monthTime} ORDER BY statistics_time,statistics_object ASC
+    </select>
+</mapper>

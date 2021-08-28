@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.InspectionTaskDao">
+
+    <resultMap id="StatisticsMap" type="com.taiping.entity.productivity.ProStatistics">
+        <result column="num" property="workDays"/>
+        <result column="executor" property="dutyOfficer"/>
+    </resultMap>
+
+    <insert id="addInspectionTaskBatch" parameterType="java.util.List">
+        INSERT INTO t_inspection_task
+        (
+        inspection_id, inspection_code, create_time, status, task_name, location, frequency, inspection_group,
+        executor, plan_start_time, plan_end_time, allow_lead_time, allow_delay_time, plan_use_time,
+        actual_use_time, actual_start_time, actual_end_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.inspectionId}, #{item.inspectionCode}, #{item.createTime}, #{item.status}, #{item.taskName},
+            #{item.location}, #{item.frequency}, #{item.inspectionGroup}, #{item.executor}, #{item.planStartTime},
+            #{item.planEndTime}, #{item.allowLeadTime}, #{item.allowDelayTime}, #{item.planUseTime},
+            #{item.actualUseTime}, #{item.actualStartTime}, #{item.actualEndTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectInspectionTaskList" resultType="com.taiping.entity.productivity.InspectionTask">
+        SELECT inspection_id, inspection_code, create_time, status, task_name, location, frequency, inspection_group,
+        executor, plan_start_time, plan_end_time, allow_lead_time, allow_delay_time, plan_use_time,
+        actual_use_time, actual_start_time, actual_end_time
+        FROM t_inspection_task
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'executor' and filter.operator == 'eq'">
+                            executor = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualEndTime' and filter.operator == 'gte'">
+                            actual_end_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualEndTime' and filter.operator == 'lte'">
+                            actual_end_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'inspectionCode'">
+                    ORDER BY inspection_code
+                </when>
+                <when test="sort.sortField == 'createTime'">
+                    ORDER BY create_time
+                </when>
+                <when test="sort.sortField == 'status'">
+                    ORDER BY status
+                </when>
+                <when test="sort.sortField == 'taskName'">
+                    ORDER BY task_name
+                </when>
+                <when test="sort.sortField == 'executor'">
+                    ORDER BY executor
+                </when>
+                <when test="sort.sortField == 'planStartTime'">
+                    ORDER BY plan_start_time
+                </when>
+                <when test="sort.sortField == 'planEndTime'">
+                    ORDER BY plan_end_time
+                </when>
+                <when test="sort.sortField == 'allowLeadTime'">
+                    ORDER BY allow_lead_time
+                </when>
+                <when test="sort.sortField == 'allowDelayTime'">
+                    ORDER BY allow_delay_time
+                </when>
+                <when test="sort.sortField == 'actualStartTime'">
+                    ORDER BY actual_start_time
+                </when>
+                <when test="sort.sortField == 'actualEndTime'">
+                    ORDER BY actual_end_time
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectInspectionTaskListCount" resultType="java.lang.Integer">
+        SELECT COUNT(inspection_id)
+        FROM t_inspection_task
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'executor' and filter.operator == 'eq'">
+                            executor = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualEndTime' and filter.operator == 'gte'">
+                            actual_end_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualEndTime' and filter.operator == 'lte'">
+                            actual_end_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectExecutorList" resultType="string">
+        SELECT DISTINCT executor FROM t_inspection_task
+    </select>
+
+    <select id="selectCountOfTime" parameterType="com.taiping.entity.productivity.ProStatistics" resultMap="StatisticsMap">
+        SELECT COUNT(inspection_id) num, executor FROM t_inspection_task
+        WHERE actual_end_time <![CDATA[ >= ]]> #{startTime}
+        AND actual_end_time <![CDATA[ <= ]]> #{endTime}
+        GROUP BY executor
+    </select>
+
+</mapper>

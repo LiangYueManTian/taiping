@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.MonthWorkloadDao">
+    <insert id="insertMonthWorkloadBatch" parameterType="java.util.List">
+        INSERT INTO t_month_workload
+        (
+        workload_id, value_type, workload_date, workload_type, workload_percentage, month_percentage, year_percentage,
+        manage_id, source_name, source_code, cause
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.workloadId},#{item.valueType},#{item.workloadDate},#{item.workloadType},#{item.workloadPercentage},
+            #{item.monthPercentage},#{item.yearPercentage},#{item.manageId},#{item.sourceName}, #{item.sourceCode},
+            #{item.cause}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryReportForCurrent" resultType="com.taiping.entity.productivity.MonthWorkload">
+        SELECT workload_id, value_type, workload_date, workload_type, workload_percentage, month_percentage,
+        year_percentage, manage_id, source_name, source_code, cause, solve_instruction, activity_type, report_type
+        FROM t_month_workload
+        WHERE report_type = '1'
+        ORDER BY workload_type DESC
+    </select>
+
+    <update id="cancelReportCurrent">
+        UPDATE t_month_workload
+        SET report_type = '0'
+        WHERE
+        report_type = '1'
+    </update>
+
+    <update id="updateBatchMonthWorkload">
+        UPDATE t_month_workload
+        SET report_type = '1', solve_instruction = CASE manage_id
+        <foreach collection="list" item="item" separator="" close="" open="">
+            WHEN #{item.manageId} THEN #{item.solveInstruction}
+        </foreach>
+        END, activity_type = CASE manage_id
+        <foreach collection="list" item="item" separator="" close="" open="">
+            WHEN #{item.manageId} THEN #{item.activityType}
+        </foreach>
+        END
+        WHERE manage_id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.manageId,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <select id="queryReportForTime" parameterType="java.lang.Long"
+            resultType="com.taiping.entity.productivity.MonthWorkload">
+        SELECT workload_id, value_type, workload_date, workload_type, workload_percentage, month_percentage,
+        year_percentage, manage_id, source_name, source_code, cause, solve_instruction, activity_type, report_type
+        FROM t_month_workload
+        WHERE report_type IS NOT NULL AND workload_date = #{workloadDate}
+        ORDER BY workload_type DESC
+    </select>
+
+    <select id="queryMonthWorkloadForTime"  resultType="com.taiping.entity.productivity.MonthWorkload">
+        SELECT workload_id, value_type, workload_date, workload_type, workload_percentage, month_percentage,
+        year_percentage, manage_id, source_name, source_code, cause, solve_instruction, activity_type, report_type
+        FROM t_month_workload
+        WHERE value_type = #{valueType} AND workload_date <![CDATA[ >= ]]> #{startTime}
+        AND workload_date <![CDATA[ <= ]]> #{endTime}
+        ORDER BY workload_date ASC
+    </select>
+
+</mapper>

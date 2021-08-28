@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.problem.dao.TroubleTypeStatisticsDao">
+
+    <insert id="insertTroubleTypeStatisticsBatch" parameterType="java.util.List">
+        INSERT INTO t_trouble_type_statistics
+        (
+        statistics_id, statistics_date, top_type, secondary_type, total_number, month_percentage, year_percentage,
+        very_low_number, very_low_month, very_low_year, low_number, low_month, low_year, moderate_number,
+        moderate_month, moderate_year, high_number, high_month, high_year, very_high_number, very_high_month,
+        very_high_year, value_year, value_month, manage_id, source_name, source_code, cause
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.statisticsId}, #{item.statisticsDate}, #{item.topType}, #{item.secondaryType}, #{item.totalNumber},
+            #{item.monthPercentage}, #{item.yearPercentage}, #{item.veryLowNumber}, #{item.veryLowMonth},
+            #{item.veryLowYear}, #{item.lowNumber}, #{item.lowMonth}, #{item.lowYear}, #{item.moderateNumber},
+            #{item.moderateMonth}, #{item.moderateYear}, #{item.highNumber}, #{item.highMonth}, #{item.highYear},
+            #{item.veryHighNumber}, #{item.veryHighMonth}, #{item.veryHighYear}, #{item.valueYear}, #{item.valueMonth},
+            #{item.manageId}, #{item.sourceName}, #{item.sourceCode}, #{item.cause}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryReportForCurrent" resultType="com.taiping.entity.problem.TroubleTypeStatistics">
+        SELECT statistics_id, statistics_date, top_type, secondary_type, total_number, month_percentage,
+        year_percentage, very_low_number, very_low_month, very_low_year, low_number, low_month, low_year,
+        moderate_number, moderate_month, moderate_year, high_number, high_month, high_year, very_high_number,
+        very_high_month, very_high_year, value_year, value_month, manage_id, source_name, source_code, cause,
+        solve_instruction, activity_type, report_type
+        FROM t_trouble_type_statistics
+        WHERE report_type = '1'
+        ORDER BY top_type ASC, total_number DESC
+    </select>
+
+    <select id="queryReportForTime" parameterType="java.lang.Long"
+            resultType="com.taiping.entity.problem.TroubleTypeStatistics">
+        SELECT statistics_id, statistics_date, top_type, secondary_type, total_number, month_percentage,
+        year_percentage, very_low_number, very_low_month, very_low_year, low_number, low_month, low_year,
+        moderate_number, moderate_month, moderate_year, high_number, high_month, high_year, very_high_number,
+        very_high_month, very_high_year, value_year, value_month, manage_id, source_name, source_code, cause,
+        solve_instruction, activity_type, report_type
+        FROM t_trouble_type_statistics
+        WHERE report_type IS NOT NULL AND statistics_date = #{date}
+        ORDER BY top_type ASC, total_number DESC
+    </select>
+
+    <update id="cancelReportCurrent">
+        UPDATE t_trouble_type_statistics
+        SET report_type = '0'
+        WHERE
+        report_type = '1'
+    </update>
+
+    <update id="updateBatchTroubleTypeStatistics">
+        UPDATE t_trouble_type_statistics
+        SET report_type = '1', solve_instruction = CASE manage_id
+        <foreach collection="list" item="item" separator="" close="" open="">
+            WHEN #{item.manageId} THEN #{item.solveInstruction}
+        </foreach>
+        END, activity_type = CASE manage_id
+        <foreach collection="list" item="item" separator="" close="" open="">
+            WHEN #{item.manageId} THEN #{item.activityType}
+        </foreach>
+        END
+        WHERE manage_id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.manageId,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+</mapper>

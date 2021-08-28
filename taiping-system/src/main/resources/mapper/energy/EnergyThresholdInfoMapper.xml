@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.energy.dao.analyze.EnergyThresholdInfoDao">
+
+    <!-- 功能阈值返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.analyze.energy.EnergyThresholdInfo">
+        <id column="threshold_info_id" property="thresholdInfoId" />
+        <result column="threshold_name" property="thresholdName" />
+        <result column="threshold_value" property="thresholdValue" />
+        <result column="threshold_code" property="thresholdCode" />
+        <result column="year_over_year_percent" property="yearOverYearPercent" />
+        <result column="threshold_data" property="thresholdData" />
+        <result column="ring_growth" property="ringGrowth" />
+        <result column="type" property="type" />
+        <result column="module" property="module" />
+        <result column="advice" property="advice" />
+        <result column="month" property="month" />
+        <result column="year" property="year" />
+        <result column="is_child" property="isChild" />
+        <result column="parent_code" property="parentCode" />
+        <result column="year_over_year_number" property="yearOverYearNumber" />
+        <result column="ring_growth_number" property="ringGrowthNumber" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!--全部的列-->
+    <sql id="AllColumnList">
+      threshold_info_id,    threshold_name,   threshold_value,    threshold_code,
+      year_over_year_percent,   threshold_data,   ring_growth,    type,
+      module,        advice,    month,         year,
+      is_child,      parent_code,           year_over_year_number,    ring_growth_number,
+      data_collection_time,   is_deleted,
+      create_user,    create_time,    update_user,    update_time
+    </sql>
+
+    <!-- 查询阈值信息表的数据 -->
+    <select id="queryThresholdInfoList" resultMap="BaseResultMap"  parameterType="com.taiping.bean.energy.parameter.analyze.EnergyThresholdInfoListParameter">
+        select
+        <include refid="AllColumnList"/>
+        from t_energy_threshold_info
+        where is_deleted = 0
+        <!--年-->
+        <if test="year != null">
+          and year = #{year}
+        </if>
+        <!--月-->
+        <if test="month != null">
+          and month = #{month}
+        </if>
+        <!--模块-->
+        <if test="module != null and module != ''">
+          and module = #{module}
+        </if>
+        <!--类型-->
+        <if test="type != null and type != ''">
+          and type = #{type}
+        </if>
+        <!--分析数据的id集合-->
+        <if test="thresholdCodeList != null and thresholdCodeList.size() > 0">
+            <if test="thresholdCodeList.size() == 1">
+                AND threshold_code =
+                <foreach collection="thresholdCodeList" item="thresholdCode">
+                    #{thresholdCode}
+                </foreach>
+            </if>
+            <if test="thresholdCodeList.size() > 1">
+                AND threshold_code IN
+                <foreach collection="thresholdCodeList" item="thresholdCode" open="(" close=")" separator=",">
+                    #{thresholdCode}
+                </foreach>
+            </if>
+        </if>
+
+        <!--分析数据的父类集合-->
+        <if test="parentCodeList != null and parentCodeList.size() > 0">
+            <if test="parentCodeList.size() == 1">
+                AND parent_code =
+                <foreach collection="parentCodeList" item="parentCode">
+                    #{parentCode}
+                </foreach>
+            </if>
+            <if test="parentCodeList.size() > 1">
+                AND parent_code IN
+                <foreach collection="parentCodeList" item="parentCode" open="(" close=")" separator=",">
+                    #{parentCode}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 是否是子集 -->
+        <if test = "isChild != null and isChild != ''">
+            and is_child = #{isChild}
+        </if>
+    </select>
+
+    <!--查询阈值信息最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="BaseResultMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_energy_threshold_info
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+    <!-- 批量新增基础机柜信息 -->
+    <insert id="insertThresholdInfoBatch" parameterType="java.util.List">
+      insert into t_energy_threshold_info
+      (
+        threshold_info_id,
+        threshold_name,
+        threshold_value,
+        threshold_code,
+        year_over_year_percent,
+        threshold_data,
+        ring_growth,
+        type,
+        module,
+        advice,
+        month,
+        year,
+        is_child,
+        parent_code,
+        year_over_year_number,
+        ring_growth_number,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.thresholdInfoId},
+                #{item.thresholdName},
+                #{item.thresholdValue},
+                #{item.thresholdCode},
+                #{item.yearOverYearPercent},
+                #{item.thresholdData},
+                #{item.ringGrowth},
+                #{item.type},
+                #{item.module},
+                #{item.advice},
+                #{item.month},
+                #{item.year},
+                #{item.isChild},
+                #{item.parentCode},
+                #{item.yearOverYearNumber},
+                #{item.ringGrowthNumber},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增容量阈值信息 -->
+    <insert id="insertThresholdInfo" parameterType="com.taiping.entity.analyze.energy.EnergyThresholdInfo">
+      insert into t_energy_threshold_info
+      (
+        threshold_info_id,
+        threshold_name,
+        threshold_value,
+        threshold_code,
+        year_over_year_percent,
+        threshold_data,
+        ring_growth,
+        type,
+        module,
+        advice,
+        month,
+        year,
+        is_child,
+        parent_code,
+        year_over_year_number,
+        ring_growth_number,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{thresholdInfoId},
+        #{thresholdName},
+        #{thresholdValue},
+        #{thresholdCode},
+        #{yearOverYearPercent},
+        #{thresholdData},
+        #{ringGrowth},
+        #{type},
+        #{module},
+        #{advice},
+        #{month},
+        #{year},
+        #{isChild},
+        #{parentCode},
+        #{yearOverYearNumber},
+        #{ringGrowthNumber},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 批量修改运维管理活动类型和处理说明 -->
+    <update id="updateAdviceInfoListForActivity" parameterType="java.util.List">
+        update t_energy_threshold_info
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="activity_type =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.activityType!=null">
+                        when threshold_code=#{item.thresholdCode} then #{item.activityType}
+                    </if>
+                </foreach>
+            </trim>
+
+            <trim prefix="solve_instruction =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.solveInstruction!=null">
+                        when threshold_code=#{item.thresholdCode} then #{item.solveInstruction}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where 1=1
+        and threshold_code in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.thresholdCode}
+        </foreach>
+    </update>
+
+</mapper>

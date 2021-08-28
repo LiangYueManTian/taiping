@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.capacity.dao.cabinet.ItEnergyCurrentDao">
+
+
+    <!-- it能耗电流信息返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.cabinet.ItEnergyCurrent">
+        <id column="it_energy_id" property="itEnergyId" />
+        <result column="data_name" property="dataName" />
+        <result column="name" property="name" />
+        <result column="all_electric_meter" property="allElectricMeter" />
+        <result column="growth_electric_meter" property="growthElectricMeter" />
+        <result column="module" property="module" />
+        <result column="type" property="type" />
+        <result column="year" property="year" />
+        <result column="month" property="month" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+
+    <!--it能耗列表不分页返回值-->
+    <resultMap id="ItEnergyNotPage" type="com.taiping.bean.capacity.cabinet.dto.ItEnergyNotPageDto">
+        <result column="dataName" property="dataName" />
+        <result column="name" property="name" />
+        <result column="module" property="module" />
+        <result column="type" property="type" />
+        <result column="year" property="year" />
+        <result column="januaryMeter" property="januaryMeter" />
+        <result column="februaryMeter" property="februaryMeter" />
+        <result column="marchMeter" property="marchMeter" />
+        <result column="aprilMeter" property="aprilMeter" />
+        <result column="mayMeter" property="mayMeter" />
+        <result column="juneMeter" property="juneMeter" />
+        <result column="julyMeter" property="julyMeter" />
+        <result column="augustMeter" property="augustMeter" />
+        <result column="septemberMeter" property="septemberMeter" />
+        <result column="octoberMeter" property="octoberMeter" />
+        <result column="novemberMeter" property="novemberMeter" />
+        <result column="decemberMeter" property="decemberMeter" />
+    </resultMap>
+
+    <!--it能耗列表返回值-->
+    <resultMap id="ItEnergyMap" extends="BaseResultMap" type="com.taiping.bean.capacity.cabinet.dto.ItEnergyCurrentDto">
+    </resultMap>
+
+    <!-- 单表所有字段 -->
+    <sql id="AllColumnList">
+      it_energy_id, data_name,     all_electric_meter, growth_electric_meter,
+      module,     type,         year,    month,         name,     data_collection_time,
+      is_deleted,  create_user,   create_time,       update_user,
+      update_time
+    </sql>
+
+
+    <!-- it能耗信息where条件 -->
+    <sql id="whereBySqlForItEnergy">
+        <!-- 选择多个模块筛选条件 -->
+        <if test="bizCondition.moduleList != null and bizCondition.moduleList.size() > 0">
+            <if test="bizCondition.moduleList.size() == 1">
+                AND module =
+                <foreach collection="bizCondition.moduleList" item="module">
+                    #{module}
+                </foreach>
+            </if>
+            <if test="bizCondition.moduleList.size() > 1">
+                AND module IN
+                <foreach collection="bizCondition.moduleList" item="module" open="(" close=")" separator=",">
+                    #{module}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个设备类型条件 -->
+        <if test="bizCondition.typeList != null and bizCondition.typeList.size() > 0">
+            <if test="bizCondition.typeList.size() == 1">
+                AND type =
+                <foreach collection="bizCondition.typeList" item="type">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="bizCondition.typeList.size() > 1">
+                AND type IN
+                <foreach collection="bizCondition.typeList" item="type" open="(" close=")" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个年份条件 -->
+        <if test="bizCondition.yearList != null and bizCondition.yearList.size() > 0">
+            <if test="bizCondition.yearList.size() == 1">
+                AND year =
+                <foreach collection="bizCondition.yearList" item="year">
+                    #{year}
+                </foreach>
+            </if>
+            <if test="bizCondition.yearList.size() > 1">
+                AND year IN
+                <foreach collection="bizCondition.yearList" item="year" open="(" close=")" separator=",">
+                    #{year}
+                </foreach>
+            </if>
+        </if>
+
+        <!--模块-->
+        <if test="bizCondition.module != null and bizCondition.module != ''">
+            AND module LIKE CONCAT('%',#{bizCondition.module},'%')
+        </if>
+
+        <!--设备类型-->
+        <if test="bizCondition.type != null and bizCondition.type != ''">
+            AND type = #{bizCondition.type}
+        </if>
+
+        <!--年份-->
+        <if test="bizCondition.year != null and bizCondition.year != ''">
+            AND year = #{bizCondition.year}
+        </if>
+    </sql>
+
+    <!--it能耗公用sql-->
+    <sql id="orderBySql">
+        <!--排序-->
+        <if test="sortCondition.sortField != null and sortCondition.sortField != '' ">
+            <!--数据名称-->
+            <if test="sortCondition.sortField == 'dataName'">
+                ORDER BY data_name
+            </if>
+            <!--累计电量数-->
+            <if test="sortCondition.sortField == 'allElectricMeter'">
+                ORDER BY all_electric_meter
+            </if>
+            <!--增长电量数-->
+            <if test="sortCondition.sortField == 'growthElectricMeter'">
+                ORDER BY growth_electric_meter
+            </if>
+            <!--模块-->
+            <if test="sortCondition.sortField == 'module'">
+                ORDER BY module
+            </if>
+            <!--设备类型-->
+            <if test="sortCondition.sortField == 'type'">
+                ORDER BY type
+            </if>
+            <!--年份-->
+            <if test="sortCondition.sortField == 'year'">
+                ORDER BY year
+            </if>
+            <!--名称-->
+            <if test="sortCondition.sortField == 'name'">
+                ORDER BY name
+            </if>
+            <!--数据采集时间-->
+            <if test="sortCondition.sortField == 'dataCollectionTime'">
+                ORDER BY data_collection_time
+            </if>
+            <!--创建时间-->
+            <if test="sortCondition.sortField == 'createTime'">
+                ORDER BY create_time
+            </if>
+            <!-- 字段排序 -->
+            <if test="sortCondition.sortRule != null and sortCondition.sortRule != ''">
+                ${sortCondition.sortRule}
+            </if>
+        </if>
+    </sql>
+
+    <!--查询it能耗最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="ItEnergyMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_it_energy_current
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+    <!--查询it能耗信息-->
+    <select id="queryItEnergyInfoList" parameterType="com.taiping.bean.capacity.cabinet.parameter.ItEnergyInfoParameter" resultMap="ItEnergyMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_it_energy_current
+        where 1=1
+        <!--数据名称集合-->
+        <if test="dataNameList != null and dataNameList.size() > 0">
+            <if test="dataNameList.size() == 1">
+                AND data_name =
+                <foreach collection="dataNameList" item="dataName">
+                    #{dataName}
+                </foreach>
+            </if>
+            <if test="dataNameList.size() > 1">
+                AND data_name IN
+                <foreach collection="dataNameList" item="dataName" open="(" close=")" separator=",">
+                    #{dataName}
+                </foreach>
+            </if>
+        </if>
+        <!--查询年份参数-->
+        <if test="year != null and year != ''">
+          and year = #{year}
+        </if>
+        <!--查询月份参数-->
+        <if test="month != null and month != ''">
+          and month = #{month}
+        </if>
+    </select>
+
+    <!--查询it能耗集合不分页-->
+    <select id="queryItEnergyListNotPage" parameterType="com.taiping.bean.capacity.cabinet.parameter.ItEnergyListParameter" resultMap="ItEnergyNotPage">
+        select data_name as  dataName, name , module , type , year,
+        SUM(IF(`month`='1', growth_electric_meter,0)) as januaryMeter,
+        SUM(IF(`month`='2',growth_electric_meter,0)) as februaryMeter,
+        SUM(IF(`month`='3',growth_electric_meter,0)) as marchMeter,
+        SUM(IF(`month`='4',growth_electric_meter,0)) as aprilMeter,
+        SUM(IF(`month`='5',growth_electric_meter,0)) as mayMeter,
+        SUM(IF(`month`='6',growth_electric_meter,0)) as juneMeter,
+        SUM(IF(`month`='7',growth_electric_meter,0)) as julyMeter,
+        SUM(IF(`month`='8',growth_electric_meter,0)) as augustMeter,
+        SUM(IF(`month`='9',growth_electric_meter,0)) as septemberMeter,
+        SUM(IF(`month`='10',growth_electric_meter,0)) as octoberMeter,
+        SUM(IF(`month`='11',growth_electric_meter,0)) as novemberMeter,
+        SUM(IF(`month`='12',growth_electric_meter,0)) as decemberMeter
+        from t_it_energy_current
+        where 1=1
+        <!-- 选择多个模块筛选条件 -->
+        <if test="moduleList != null and moduleList.size() > 0">
+            <if test="moduleList.size() == 1">
+                AND module =
+                <foreach collection="moduleList" item="module">
+                    #{module}
+                </foreach>
+            </if>
+            <if test="moduleList.size() > 1">
+                AND module IN
+                <foreach collection="moduleList" item="module" open="(" close=")" separator=",">
+                    #{module}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个设备类型条件 -->
+        <if test="typeList != null and typeList.size() > 0">
+            <if test="typeList.size() == 1">
+                AND type =
+                <foreach collection="typeList" item="type">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="typeList.size() > 1">
+                AND type IN
+                <foreach collection="typeList" item="type" open="(" close=")" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个年份条件 -->
+        <if test="yearList != null and yearList.size() > 0">
+            <if test="yearList.size() == 1">
+                AND year =
+                <foreach collection="yearList" item="year">
+                    #{year}
+                </foreach>
+            </if>
+            <if test="yearList.size() > 1">
+                AND year IN
+                <foreach collection="yearList" item="year" open="(" close=")" separator=",">
+                    #{year}
+                </foreach>
+            </if>
+        </if>
+
+        <!--模块-->
+        <if test="module != null and module != ''">
+            AND module = #{module}
+        </if>
+
+        <!--设备类型-->
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+
+        <!--年份-->
+        <if test="year != null and year != ''">
+            AND year = #{year}
+        </if>
+        group by data_name, year
+    </select>
+
+    <!-- 查询it能耗集合 -->
+    <select id="queryItEnergyList" parameterType="com.taiping.entity.QueryCondition" resultMap="ItEnergyMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_it_energy_current
+        where  1=1
+        <!-- 查询it能耗的条件 -->
+        <include refid="whereBySqlForItEnergy"/>
+        <!-- 排序 -->
+        <include refid="orderBySql"/>
+        <if test="pageCondition.beginNum != null and pageCondition.pageSize != null">
+            LIMIT
+            #{pageCondition.beginNum},#{pageCondition.pageSize}
+        </if>
+    </select>
+
+    <!-- 查询it能耗数量 -->
+    <select id="queryItEnergyCount" parameterType="com.taiping.entity.QueryCondition" resultType="java.lang.Integer">
+        select
+        count(*)
+        from t_it_energy_current
+        where  1=1
+        <!-- 查询it能耗的条件 -->
+        <include refid="whereBySqlForItEnergy"/>
+    </select>
+
+    <!-- 查询it能耗模块 -->
+    <select id="queryItEnergyGroupByModuleAndDate" resultType="com.taiping.bean.capacity.cabinet.dto.ItEnergyBaseStatisticsDto"  parameterType="com.taiping.bean.capacity.cabinet.parameter.ItEnergyListParameter">
+      select
+          data_name as dataName,
+          sum(growth_electric_meter) as growthElectricMeter,
+          module,
+          type,
+          year,
+          month
+      from
+      t_it_energy_current
+      where 1=1
+        <if test="month != null">
+            and month = #{month}
+        </if>
+        <if test="year != null">
+            and year = #{year}
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            and data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        <!-- 筛选设备类型的数据 -->
+        <if test="type != null and type != ''">
+            and type = #{type}
+        </if>
+        GROUP BY module, year, month
+    </select>
+
+    <!-- 查询it能耗的总量 -->
+    <select id="queryItEnergyInfoGroupByDate" resultType="com.taiping.bean.capacity.cabinet.dto.ItEnergyBaseStatisticsDto"  parameterType="com.taiping.bean.capacity.cabinet.parameter.ItEnergyListParameter">
+        select
+          sum(growth_electric_meter) as growthElectricMeter,
+          year,
+          month
+        from t_it_energy_current
+        where 1=1
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            and data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and is_deleted = 0
+        group by year, month
+    </select>
+
+    <!-- 批量新增it能耗电流信息 -->
+    <insert id="insertItEnergyCurrentBatch" parameterType="java.util.List">
+      insert into t_it_energy_current
+      (
+        it_energy_id,
+        data_name,
+        name,
+        all_electric_meter,
+        growth_electric_meter,
+        module,
+        type,
+        year,
+        month,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.itEnergyId},
+                #{item.dataName},
+                #{item.name},
+                #{item.allElectricMeter},
+                #{item.growthElectricMeter},
+                #{item.module},
+                #{item.type},
+                #{item.year},
+                #{item.month},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增it能耗电流信息 -->
+    <insert id="insertItEnergyCurrent" parameterType="com.taiping.entity.cabinet.BaseCabinet">
+      insert into t_it_energy_current
+      (
+        it_energy_id,
+        data_name,
+        name,
+        all_electric_meter,
+        growth_electric_meter,
+        module,
+        type,
+        year,
+        month,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{itEnergyId},
+        #{dataName},
+        #{name},
+        #{allElectricMeter},
+        #{growthElectricMeter},
+        #{module},
+        #{type},
+        #{year},
+        #{month},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 删除全部it能耗电流信息 -->
+    <delete id="deleteAllItEnergyCurrent">
+        delete from t_it_energy_current
+    </delete>
+
+</mapper>

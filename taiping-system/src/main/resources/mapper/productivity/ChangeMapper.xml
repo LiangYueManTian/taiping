@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.ChangeDao">
+    <insert id="insertChangeBatch" parameterType="java.util.List">
+        INSERT INTO t_change
+        (
+        change_id, change_code, change_name, change_type, people,
+        workload, start_date, end_date, handover_people, project_status
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.changeId},#{item.changeCode},#{item.changeName},#{item.changeType},
+            #{item.people},#{item.workload},#{item.startDate},#{item.endDate},#{item.handoverPeople},#{item.projectStatus}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectChangeList" resultType="com.taiping.entity.productivity.Change">
+        SELECT change_id, change_code, change_name, change_type, people,
+        workload, start_date, end_date, handover_people, project_status
+        FROM t_change
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'changeCode' and filter.operator == 'like'">
+                            change_code LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'changeName' and filter.operator == 'like'">
+                            change_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'startDate' and filter.operator == 'gte'">
+                            start_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'startDate' and filter.operator == 'lte'">
+                            start_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'endDate' and filter.operator == 'gte'">
+                            end_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'endDate' and filter.operator == 'lte'">
+                            end_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'changeCode'">
+                    ORDER BY change_code
+                </when>
+                <when test="sort.sortField == 'changeName'">
+                    ORDER BY change_name
+                </when>
+                <when test="sort.sortField == 'changeType'">
+                    ORDER BY change_type
+                </when>
+                <when test="sort.sortField == 'people'">
+                    ORDER BY people
+                </when>
+                <when test="sort.sortField == 'workload'">
+                    ORDER BY workload
+                </when>
+                <when test="sort.sortField == 'startDate'">
+                    ORDER BY start_date
+                </when>
+                <when test="sort.sortField == 'endDate'">
+                    ORDER BY end_date
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectChangeListCount" resultType="java.lang.Integer">
+        SELECT COUNT(change_id)
+        FROM t_change
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'changeCode' and filter.operator == 'like'">
+                            change_code LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'changeName' and filter.operator == 'like'">
+                            change_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'startDate' and filter.operator == 'gte'">
+                            start_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'startDate' and filter.operator == 'lte'">
+                            start_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'endDate' and filter.operator == 'gte'">
+                            end_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'endDate' and filter.operator == 'lte'">
+                            end_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectChangeForTime" parameterType="com.taiping.entity.productivity.ProStatistics"
+            resultType="com.taiping.entity.productivity.Change">
+        SELECT change_id, change_code, change_name, change_type, people,
+        workload, start_date, end_date, handover_people, project_status
+        FROM t_change
+        WHERE start_date <![CDATA[ >= ]]> #{startTime}
+        AND end_date <![CDATA[ <= ]]> #{endTime}
+    </select>
+</mapper>

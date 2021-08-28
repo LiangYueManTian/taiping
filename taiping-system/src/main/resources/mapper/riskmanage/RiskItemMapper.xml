@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.riskmanage.dao.RiskItemDao">
+    <resultMap id="riskTrendStatistics" type="com.taiping.entity.riskmanage.RiskTrendStatistics">
+        <id property="riskType" column="risk_type" />
+        <result property="riskLevel" column="risk_level" />
+        <result property="riskMonth" column="risk_month" />
+        <result property="count" column="data_count" />
+    </resultMap>
+
+    <!--查询所有风险项-->
+    <select id="selectAllRiskItem" resultType="com.taiping.entity.riskmanage.RiskItem">
+        SELECT * FROM t_risk_item
+    </select>
+
+    <!--根据风险追踪负责人查询风险项-->
+    <select id="selectRiskItemsByTrackUser" resultType="com.taiping.entity.riskmanage.RiskItem">
+        SELECT * FROM t_risk_item WHERE track_user = #{trackUser}
+    </select>
+
+    <!--根据复检人查询风险项-->
+    <select id="selectRiskItemByCheckUser" resultType="com.taiping.entity.riskmanage.RiskItem">
+        SELECT * FROM t_risk_item WHERE check_user = #{checkUser}
+    </select>
+
+    <!--根据用户id获取待处理风险项总数-->
+    <select id="selectCountByUserId" parameterType="String" resultType="Integer">
+        SELECT COUNT(risk_item_id) from t_risk_item WHERE track_user = #{userId} OR check_user = #{userId}
+    </select>
+
+    <!--根据相关运维活动id查询风险项-->
+    <select id="selectRiskItemByActivityId" resultType="com.taiping.entity.riskmanage.RiskItem">
+        SELECT * FROM t_risk_item WHERE activity_id = #{activityId}
+    </select>
+
+    <!--批量更新风险项超时时间-->
+    <update id="batchUpdateTimeoutTime" parameterType="java.util.List">
+        <foreach collection="list" item="riskItem" index="index" open="" close="" separator=";">
+            UPDATE t_risk_item
+            <set>
+                timeout_time = #{riskItem.timeoutTime},
+            </set>
+            <where>
+                risk_item_id = #{riskItem.riskItemId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--获取风险趋势分析统计数据-->
+    <select id="selectRiskTrendStatisticsData" resultMap="riskTrendStatistics">
+        SELECT risk_type,risk_level,risk_found_year,risk_found_month,COUNT(risk_item_id) AS data_count FROM t_risk_item GROUP BY risk_type,risk_level,risk_found_year,risk_found_month
+    </select>
+</mapper>

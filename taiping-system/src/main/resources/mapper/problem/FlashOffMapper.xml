@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.problem.dao.FlashOffDao">
+
+
+    <select id="queryLatestFlashOffDate" resultType="java.lang.Long">
+        SELECT MAX(off_date) FROM t_flash_off
+    </select>
+
+    <select id="selectFlashOffForTime" parameterType="com.taiping.entity.problem.ProblemSelect"
+            resultType="com.taiping.entity.problem.FlashOff">
+        SELECT off_type, off_date FROM t_flash_off
+        WHERE off_date <![CDATA[ >= ]]> #{startTime}
+        AND off_date <![CDATA[ <= ]]> #{endTime}
+    </select>
+
+
+    <!--批量导入常白班排班和倒班排班参数-->
+    <insert id="addFlashOffBatch" parameterType="java.util.List">
+        INSERT INTO t_flash_off
+        (
+        id, off_type, off_date, cause, influence, start_time, end_time, remark
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id}, #{item.offType}, #{item.offDate}, #{item.cause}, #{item.influence}, #{item.startTime},
+            #{item.endTime}, #{item.remark}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectFlashOffList" resultType="com.taiping.entity.problem.FlashOff">
+        SELECT id, off_type, off_date, cause, influence, start_time, end_time, remark
+        FROM t_flash_off
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'offType' and filter.operator == 'in'">
+                            off_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'offDate' and filter.operator == 'gte'">
+                            off_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'offDate' and filter.operator == 'lte'">
+                            off_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'offDate'">
+                    ORDER BY off_date
+                </when>
+                <when test="sort.sortField == 'offType'">
+                    ORDER BY off_type
+                </when>
+                <when test="sort.sortField == 'cause'">
+                    ORDER BY cause
+                </when>
+                <when test="sort.sortField == 'influence'">
+                    ORDER BY influence
+                </when>
+                <when test="sort.sortField == 'startTime'">
+                    ORDER BY start_time
+                </when>
+                <when test="sort.sortField == 'endTime'">
+                    ORDER BY end_time
+                </when>
+                <when test="sort.sortField == 'remark'">
+                    ORDER BY remark
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectFlashOffListCount" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM t_flash_off
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'offType' and filter.operator == 'in'">
+                            off_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'offDate' and filter.operator == 'gte'">
+                            off_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'offDate' and filter.operator == 'lte'">
+                            off_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

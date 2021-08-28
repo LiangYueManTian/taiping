@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.manage.dao.ManageActivityDao">
+    
+    <resultMap id="BaseMapper" type="com.taiping.entity.manage.ManageActivity">
+        <id column="manage_id" property="manageId"/>
+        <result column="manage_type" property="manageType"/>
+        <result column="source_name" property="sourceName"/>
+        <result column="source_code" property="sourceCode"/>
+        <result column="source_mode" property="sourceMode"/>
+        <result column="source_type" property="sourceType"/>
+        <result column="cause" property="cause"/>
+        <result column="create_date" property="createDate"/>
+        <result column="create_time" property="createTime"/>
+        <result column="responsible_id" property="responsibleId"/>
+        <result column="responsible_person" property="responsiblePerson"/>
+        <result column="completion_time" property="completionTime"/>
+        <result column="change_reason" property="changeReason"/>
+        <result column="change_reason_txt" property="changeReasonTxt"/>
+        <result column="is_remind" property="isRemind"/>
+        <result column="activity_type" property="activityType"/>
+        <result column="activity_name" property="activityName"/>
+        <result column="solve_instruction" property="solveInstruction"/>
+        <result column="advise" property="advise"/>
+        <result column="completion_status" property="completionStatus"/>
+        <result column="reviewer_id" property="reviewerId"/>
+        <result column="reviewer" property="reviewer"/>
+        <result column="approval_status" property="approvalStatus"/>
+        <result column="review_instruction" property="reviewInstruction"/>
+        <result column="is_reduce" property="isReduce"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <resultMap id="DtoMapper" type="com.taiping.entity.manage.ManageActivityDto" extends="BaseMapper">
+        <collection property="annexList" ofType="com.taiping.entity.annex.Annex">
+            <id column="annex_id" property="annexId"/>
+            <result column="annex_name" property="annexName"/>
+            <result column="annex_path" property="annexPath"/>
+        </collection>
+    </resultMap>
+
+    <!--新增运维管理活动-->
+    <insert id="addManageActivity" parameterType="com.taiping.entity.manage.ManageActivity">
+        INSERT INTO t_manage_activity
+        (
+        manage_id, manage_type, source_name, source_code, source_mode, source_type, cause, create_date, create_time,
+        responsible_id, responsible_person, completion_time, change_reason, change_reason_txt, is_remind, activity_type,
+        activity_name, solve_instruction, advise, completion_status, reviewer_id, reviewer, approval_status,
+        review_instruction, is_reduce
+        )
+        VALUES
+        (
+        #{manageId}, #{manageType}, #{sourceName}, #{sourceCode}, #{sourceMode}, #{sourceType}, #{cause}, #{createDate},
+        #{createTime}, #{responsibleId}, #{responsiblePerson}, #{completionTime}, #{changeReason}, #{changeReasonTxt},
+        #{isRemind}, #{activityType}, #{activityName}, #{solveInstruction}, #{advise}, #{completionStatus},
+        #{reviewerId}, #{reviewer}, #{approvalStatus}, #{reviewInstruction}, #{isReduce}
+        )
+    </insert>
+
+    <insert id="insertManageActivityBatch" parameterType="list">
+        INSERT INTO t_manage_activity
+        (
+        manage_id, manage_type, source_name, source_code, source_mode, source_type, cause, create_date, create_time,
+        responsible_id, responsible_person, completion_time, is_remind, activity_type, activity_name, solve_instruction,
+        advise, completion_status, reviewer_id, reviewer, approval_status, review_instruction, is_reduce
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.manageId}, #{item.manageType}, #{item.sourceName}, #{item.sourceCode}, #{item.sourceMode},
+            #{item.sourceType}, #{item.cause}, #{item.createDate}, #{item.createTime}, #{item.responsibleId},
+            #{item.responsiblePerson}, #{item.completionTime}, #{item.isRemind}, #{item.activityType}, #{item.activityName},
+            #{item.solveInstruction}, #{item.advise}, #{item.completionStatus}, #{item.reviewerId}, #{item.reviewer},
+            #{item.approvalStatus}, #{item.reviewInstruction}, #{item.isReduce}
+            )
+        </foreach>
+    </insert>
+
+    <update id="cancelManageTypeById" parameterType="com.taiping.entity.manage.ManageActivity">
+        UPDATE t_manage_activity SET manage_type = #{manageType}
+        WHERE manage_id = #{manageId}
+    </update>
+
+
+    <select id="queryManageActivityById" parameterType="string" resultType="com.taiping.entity.manage.ManageActivity">
+        SELECT
+        manage_id, manage_type, source_name, source_code, source_mode, source_type, cause, create_date, create_time,
+        responsible_id, responsible_person, completion_time, change_reason, change_reason_txt, is_remind, activity_type,
+        activity_name, solve_instruction, advise, completion_status, reviewer_id, reviewer, approval_status,
+        review_instruction, is_reduce, update_time
+        FROM t_manage_activity WHERE manage_id = #{manageId}
+    </select>
+
+
+    <select id="queryManageActivityForTime" parameterType="com.taiping.entity.manage.ManageActivity"
+            resultType="com.taiping.entity.manage.ManageActivity">
+        SELECT source_name, source_code, source_mode, source_type, cause, create_date, responsible_id, completion_time
+        FROM t_manage_activity
+        WHERE completion_time <![CDATA[ >= ]]> #{createDate} AND
+        completion_time <![CDATA[ <= ]]> #{createTime} AND is_remind = #{isRemind}
+    </select>
+
+    <update id="updateManageActivityById" parameterType="com.taiping.entity.manage.ManageActivity">
+        UPDATE t_manage_activity
+        <set>
+            <if test="cause != null and cause != ''">
+                cause = #{cause},
+            </if>
+            <if test="createDate != null">
+                create_date = #{createDate},
+            </if>
+            <if test="manageType != null and manageType != ''">
+                manage_type = #{manageType},
+            </if>
+            <if test="responsibleId != null and responsibleId != ''">
+                responsible_id = #{responsibleId},
+            </if>
+            <if test="responsiblePerson != null and responsiblePerson != ''">
+                responsible_person = #{responsiblePerson},
+            </if>
+            <if test="completionTime != null">
+                completion_time = #{completionTime},
+            </if>
+            <if test="changeReason != null and changeReason != ''">
+                change_reason = #{changeReason},
+            </if>
+            <if test="changeReasonTxt != null and changeReasonTxt != ''">
+                change_reason_txt = #{changeReasonTxt},
+            </if>
+            <if test="isRemind != null and isRemind != ''">
+                is_remind = #{isRemind},
+            </if>
+            <if test="activityType != null and activityType != ''">
+                activity_type = #{activityType},
+            </if>
+            <if test="activityName != null and activityName != ''">
+                activity_name = #{activityName},
+            </if>
+            <if test="solveInstruction != null and solveInstruction != ''">
+                solve_instruction = #{solveInstruction},
+            </if>
+            <if test="advise != null and advise != ''">
+                advise = #{advise},
+            </if>
+            <if test="completionStatus != null and completionStatus != ''">
+                completion_status = #{completionStatus},
+            </if>
+            <if test="reviewerId != null and reviewerId != ''">
+                reviewer_id = #{reviewerId},
+            </if>
+            <if test="reviewer != null and reviewer != ''">
+                reviewer = #{reviewer},
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                approval_status = #{approvalStatus},
+            </if>
+            <if test="reviewInstruction != null and reviewInstruction != ''">
+                review_instruction = #{reviewInstruction},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        WHERE manage_id = #{manageId} AND approval_status != '2'
+    </update>
+
+
+    <select id="selectManageActivityList" resultMap="BaseMapper">
+        SELECT
+        m.manage_id, m.manage_type, m.source_name, m.source_mode, m.source_type, m.cause, m.create_date, m.create_time,
+        m.responsible_person, m.completion_time, m.change_reason, m.change_reason_txt, m.is_remind, m.activity_type,
+        m.activity_name, m.solve_instruction, m.advise, m.completion_status, m.reviewer, m.approval_status,
+        m.review_instruction, m.is_reduce, m.update_time
+        FROM t_manage_activity m
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'manageType' and filter.operator == 'in'">
+                            m.manage_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'activityType' and filter.operator == 'eq'">
+                            m.activity_type = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'sourceName' and filter.operator == 'like'">
+                            m.source_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'sourceMode' and filter.operator == 'eq'">
+                            m.source_mode = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'sourceType' and filter.operator == 'eq'">
+                            m.source_type = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'completionStatus' and filter.operator == 'eq'">
+                            m.completion_status = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'approvalStatus' and filter.operator == 'eq'">
+                            m.approval_status = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'responsibleId' and filter.operator == 'eq'">
+                            (m.responsible_id = #{filter.filterValue} OR m.reviewer_id = #{filter.filterValue})
+                        </when>
+                        <when test="filter.filterField == 'createDate' and filter.operator == 'gte'">
+                            m.create_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'createDate' and filter.operator == 'lte'">
+                            m.create_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'createTime' and filter.operator == 'gte'">
+                            m.create_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'createTime' and filter.operator == 'lte'">
+                            m.create_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'sourceName'">
+                    ORDER BY m.source_name
+                </when>
+                <when test="sort.sortField == 'sourceMode'">
+                    ORDER BY m.source_mode
+                </when>
+                <when test="sort.sortField == 'sourceType'">
+                    ORDER BY m.source_type
+                </when>
+                <when test="sort.sortField == 'cause'">
+                    ORDER BY m.cause
+                </when>
+                <when test="sort.sortField == 'createDate'">
+                    ORDER BY m.create_date
+                </when>
+                <when test="sort.sortField == 'createTime'">
+                    ORDER BY m.create_time
+                </when>
+                <when test="sort.sortField == 'responsiblePerson'">
+                    ORDER BY m.responsible_person
+                </when>
+                <when test="sort.sortField == 'completionTime'">
+                    ORDER BY m.completion_time
+                </when>
+                <when test="sort.sortField == 'isRemind'">
+                    ORDER BY m.is_remind
+                </when>
+                <when test="sort.sortField == 'activityType'">
+                    ORDER BY m.activity_type
+                </when>
+                <when test="sort.sortField == 'solveInstruction'">
+                    ORDER BY m.solve_instruction
+                </when>
+                <when test="sort.sortField == 'advise'">
+                    ORDER BY m.advise
+                </when>
+                <when test="sort.sortField == 'completionStatus'">
+                    ORDER BY m.completion_status
+                </when>
+                <when test="sort.sortField == 'reviewer'">
+                    ORDER BY m.reviewer
+                </when>
+                <when test="sort.sortField == 'approvalStatus'">
+                    ORDER BY m.approval_status
+                </when>
+                <when test="sort.sortField == 'reviewInstruction'">
+                    ORDER BY m.review_instruction
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+
+    <select id="selectManageActivityListCount" resultType="java.lang.Integer">
+    SELECT COUNT(manage_id) FROM t_manage_activity
+    <where>
+        <if test="filterList != null and filterList.size() > 0">
+            <foreach collection="filterList" item="filter" separator="and">
+                <choose>
+                    <when test="filter.filterField == 'manageType' and filter.operator == 'in'">
+                        manage_type IN
+                        <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                 close=")">
+                            #{item}
+                        </foreach>
+                    </when>
+                    <when test="filter.filterField == 'activityType' and filter.operator == 'eq'">
+                        activity_type = #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'sourceName' and filter.operator == 'like'">
+                        source_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                    </when>
+                    <when test="filter.filterField == 'sourceMode' and filter.operator == 'eq'">
+                        source_mode = #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'sourceType' and filter.operator == 'eq'">
+                        m.source_type = #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'responsibleId' and filter.operator == 'eq'">
+                        (responsible_id = #{filter.filterValue} OR reviewer_id = #{filter.filterValue})
+                    </when>
+                    <when test="filter.filterField == 'completionStatus' and filter.operator == 'eq'">
+                        completion_status = #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'approvalStatus' and filter.operator == 'eq'">
+                        approval_status = #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'createDate' and filter.operator == 'gte'">
+                        create_date <![CDATA[ >= ]]> #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'createDate' and filter.operator == 'lte'">
+                        create_date <![CDATA[ <= ]]> #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'createTime' and filter.operator == 'gte'">
+                        m.create_time <![CDATA[ >= ]]> #{filter.filterValue}
+                    </when>
+                    <when test="filter.filterField == 'createTime' and filter.operator == 'lte'">
+                        m.create_time <![CDATA[ <= ]]> #{filter.filterValue}
+                    </when>
+                </choose>
+            </foreach>
+        </if>
+    </where>
+    </select>
+
+    <select id="queryCurrentSameSource" resultMap="BaseMapper">
+        SELECT manage_id FROM t_manage_activity
+        WHERE source_mode = #{mode} AND manage_type = #{type}
+        AND source_code IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item.sourceCode}
+        </foreach>
+    </select>
+
+    <update id="updateManageTypeForType">
+        UPDATE t_manage_activity SET manage_type = #{type}
+        WHERE source_mode = #{mode} AND manage_type IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateManageTypeForId">
+        UPDATE t_manage_activity SET manage_type = #{type}
+        WHERE source_mode = #{mode} AND manage_id IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item.manageId}
+        </foreach>
+    </update>
+
+    <select id="queryManageForMode" resultMap="BaseMapper">
+        SELECT
+        manage_id, manage_type, source_name, source_code, source_mode, source_type, cause, create_date, create_time,
+        responsible_id, responsible_person, completion_time, change_reason, change_reason_txt, is_remind, activity_type,
+        activity_name, solve_instruction, advise, completion_status, reviewer_id, reviewer, approval_status,
+        review_instruction, is_reduce, update_time
+        FROM t_manage_activity
+        WHERE
+        <if test="sourceType != null and sourceType != ''">
+            source_type = #{sourceType} AND
+        </if>
+        source_mode = #{mode} AND
+        (
+        manage_type IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        <if test="type != null and type != ''">
+            OR (manage_type = #{type} AND activity_type = #{activityType})
+        </if>
+        )
+    </select>
+
+
+
+    
+</mapper>

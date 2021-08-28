@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.PerformanceDao">
+    <insert id="insertPerformanceBatch" parameterType="java.util.List">
+        INSERT INTO t_performance
+        (
+        performance_id, person_name, work_date, day_number, day_night_number,
+        inspection_number, workload, work_efficiency
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.performanceId},#{item.personName},#{item.workDate},#{item.dayNumber},
+            #{item.dayNightNumber},#{item.inspectionNumber},#{item.workload},#{item.workEfficiency}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectPerformanceList" resultType="com.taiping.entity.productivity.Performance">
+        SELECT performance_id, person_name, work_date, day_number, day_night_number,
+        inspection_number, workload, work_efficiency
+        FROM t_performance
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'personName' and filter.operator == 'eq'">
+                            person_name = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'workDate' and filter.operator == 'gte'">
+                            work_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'workDate' and filter.operator == 'lte'">
+                            work_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'workDate'">
+                    ORDER BY work_date
+                </when>
+                <when test="sort.sortField == 'personName'">
+                    ORDER BY person_name
+                </when>
+                <when test="sort.sortField == 'dayNumber'">
+                    ORDER BY day_number
+                </when>
+                <when test="sort.sortField == 'dayNightNumber'">
+                    ORDER BY day_night_number
+                </when>
+                <when test="sort.sortField == 'inspectionNumber'">
+                    ORDER BY inspection_number
+                </when>
+                <when test="sort.sortField == 'workload'">
+                    ORDER BY workload
+                </when>
+                <when test="sort.sortField == 'workEfficiency'">
+                    ORDER BY work_efficiency
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectPerformanceListCount" resultType="java.lang.Integer">
+        SELECT COUNT(performance_id)
+        FROM t_performance
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'personName' and filter.operator == 'eq'">
+                            person_name = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'workDate' and filter.operator == 'gte'">
+                            work_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'workDate' and filter.operator == 'lte'">
+                            work_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPersonList" resultType="string">
+        SELECT DISTINCT person_name FROM t_performance
+    </select>
+
+
+</mapper>

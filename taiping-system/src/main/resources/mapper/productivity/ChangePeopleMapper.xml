@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.ChangePeopleDao">
+
+    <resultMap id="StatisticsMap" type="com.taiping.entity.productivity.ProStatistics">
+        <result column="num" property="workload"/>
+        <result column="people" property="dutyOfficer"/>
+    </resultMap>
+
+    <insert id="insertChangePeopleBatch" parameterType="java.util.List">
+        INSERT INTO t_change_people
+        (
+        id, change_id, workload, people, start_date, end_date
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id},#{item.changeId},#{item.workload},#{item.people},
+            #{item.startDate},#{item.endDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="querySumOfTime" parameterType="com.taiping.entity.productivity.ProStatistics" resultMap="StatisticsMap">
+        SELECT SUM(workload) num, people FROM t_change_people
+        WHERE start_date <![CDATA[ >= ]]> #{startTime}
+        AND end_date <![CDATA[ <= ]]> #{endTime}
+        GROUP BY people
+    </select>
+</mapper>

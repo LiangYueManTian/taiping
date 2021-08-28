@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.riskmanage.dao.RiskCurrentAnalysisDao">
+    <!--批量插入风险现状分析数据-->
+    <insert id="batchInsertCurrentAnalysisData" parameterType="java.util.List">
+        INSERT INTO t_risk_current_analysis(id,risk_item_id,risk_item_name,timeout_time,risk_level,process_instruction,activity_type,threshold) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+        (#{data.id},#{data.riskItemId},#{data.riskItemName},#{data.timeoutTime},#{data.riskLevel},#{data.processInstruction},#{data.activityType},#{data.threshold})
+    </foreach>
+    </insert>
+
+    <!--批量更新风险现状分析数据-->
+    <update id="batchUpdateCurrentAnalysisData" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            UPDATE t_risk_current_analysis
+            <set>
+                risk_item_name = #{item.riskItemName},
+                timeout_time = #{item.timeoutTime},
+                risk_level = #{item.riskLevel},
+                threshold = #{item.threshold}
+            </set>
+            <where>
+                risk_item_id = #{item.riskItemId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--批量删除风险现状分析数据-->
+    <delete id="batchDeleteCurrentAnalysisData" parameterType="java.util.List">
+        DELETE FROM t_risk_current_analysis WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--获取风险现状分析数据-->
+    <select id="selectRiskCurrentAnalysisData" resultType="com.taiping.entity.riskmanage.RiskCurrentAnalysis">
+        SELECT * FROM t_risk_current_analysis
+    </select>
+</mapper>

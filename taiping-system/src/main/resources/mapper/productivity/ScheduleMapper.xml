@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.ScheduleDao">
+
+    <resultMap id="StatisticsMap" type="com.taiping.entity.productivity.ProStatistics">
+        <result column="num" property="workDays"/>
+        <result column="schedule_type" property="scheduleType"/>
+        <result column="duty_officer" property="dutyOfficer"/>
+    </resultMap>
+    <!--批量导入常白班排班和倒班排班参数-->
+    <insert id="addScheduleBatch" parameterType="java.util.List">
+        INSERT INTO t_schedule_info
+        (
+        schedule_id, schedule_date, schedule_type, schedule_name, start_time, end_time,
+        duty_officer, special_description
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.scheduleId}, #{item.scheduleDate}, #{item.scheduleType}, #{item.scheduleName},
+            #{item.startTime}, #{item.endTime}, #{item.dutyOfficer}, #{item.specialDescription}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryScheduleForTime" parameterType="java.util.List" resultType="java.lang.Long">
+        SELECT schedule_date FROM t_schedule_info
+        WHERE schedule_date IN
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item.scheduleDate}
+        </foreach>
+        <if test="type != null">
+            AND schedule_type = '1'
+        </if>
+        <if test="type == null">
+            AND schedule_type != '1'
+        </if>
+    </select>
+
+    <select id="selectScheduleList" resultType="com.taiping.entity.productivity.Schedule">
+        SELECT schedule_id, schedule_date, schedule_type, schedule_name, start_time, end_time,
+        duty_officer, special_description
+        FROM t_schedule_info
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'scheduleType' and filter.operator == 'in'">
+                            schedule_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'scheduleDate' and filter.operator == 'gte'">
+                            schedule_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'scheduleDate' and filter.operator == 'lte'">
+                            schedule_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'scheduleDate'">
+                    ORDER BY schedule_date
+                </when>
+                <when test="sort.sortField == 'scheduleType'">
+                    ORDER BY schedule_type
+                </when>
+                <when test="sort.sortField == 'startTime'">
+                    ORDER BY start_time
+                </when>
+                <when test="sort.sortField == 'endTime'">
+                    ORDER BY end_time
+                </when>
+                <when test="sort.sortField == 'dutyOfficer'">
+                    ORDER BY duty_officer
+                </when>
+                <when test="sort.sortField == 'specialDescription'">
+                    ORDER BY special_description
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectScheduleListCount" resultType="java.lang.Integer">
+        SELECT COUNT(schedule_id)
+        FROM t_schedule_info
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'scheduleType' and filter.operator == 'in'">
+                            schedule_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'scheduleDate' and filter.operator == 'gte'">
+                            schedule_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'scheduleDate' and filter.operator == 'lte'">
+                            schedule_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="queryLatestScheduleDate" resultType="java.lang.Long">
+        SELECT MAX(schedule_date)  FROM t_schedule_info
+    </select>
+
+    <select id="selectCountOfMonth" parameterType="com.taiping.entity.productivity.ProStatistics" resultMap="StatisticsMap">
+        SELECT COUNT(schedule_id) num, duty_officer, schedule_type FROM t_schedule_info
+        WHERE schedule_date <![CDATA[ >= ]]> #{startTime}
+        AND schedule_date <![CDATA[ <= ]]> #{endTime}
+        GROUP BY duty_officer, schedule_type
+    </select>
+
+</mapper>

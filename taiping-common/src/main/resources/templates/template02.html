@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>维保预提醒邮件</title>
+</head>
+<body>
+您好,您负责的维保项目 <span th:text="${planName}"/>计划将在<span th:text="${preTime}" /> 天后执行，请及时执行该维保项目!<br/>
+提醒时间：<span th:text="${time}"/><br/>
+
+
+</body>
+</html>

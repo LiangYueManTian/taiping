@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.riskmanage.dao.RiskTrendAnalysisDao">
+    <!--批量插入风险趋势分析数据-->
+    <insert id="batchInsertTrendAnalysisData" parameterType="java.util.List">
+        INSERT INTO t_risk_trend_analysis(id,risk_type,advanced_risk_number,advanced_risk_year_over_year,advanced_risk_ring_growth,
+        intermediate_risk_number,intermediate_risk_year_over_year,intermediate_risk_ring_growth,low_risk_number,low_risk_year_over_year,
+        low_risk_ring_growth,risk_found_time,process_instruction,activity_type) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.riskType},ifnull(#{data.advancedRiskNumber},0),#{data.advancedRiskYearOverYear},#{data.advancedRiskRingGrowth},
+            ifnull(#{data.intermediateRiskNumber},0),#{data.intermediateRiskYearOverYear},#{data.intermediateRiskRingGrowth},ifnull(#{data.lowRiskNumber},0),
+            #{data.lowRiskYearOverYear},#{data.lowRiskRingGrowth},#{data.riskFoundTime},#{data.processInstruction},#{data.activityType})
+        </foreach>
+    </insert>
+
+    <!--批量更新风险趋势分析数据-->
+    <update id="batchUpdateTrendAnalysisData" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            UPDATE t_risk_trend_analysis
+            <set>
+                advanced_risk_number = #{item.advancedRiskNumber},
+                advanced_risk_year_over_year = #{item.advancedRiskYearOverYear},
+                advanced_risk_ring_growth = #{item.advancedRiskRingGrowth},
+                intermediate_risk_number = #{item.intermediateRiskNumber},
+                intermediate_risk_year_over_year = #{item.intermediateRiskYearOverYear},
+                intermediate_risk_ring_growth = #{item.intermediateRiskRingGrowth},
+                low_risk_number = #{item.lowRiskNumber},
+                low_risk_year_over_year = #{item.lowRiskYearOverYear},
+                low_risk_ring_growth = #{item.lowRiskRingGrowth}
+            </set>
+            <where>
+                id = #{item.id}
+            </where>
+        </foreach>
+    </update>
+
+    <!--批量删除风险趋势分析数据-->
+    <delete id="batchDeleteTrendAnalysisData" parameterType="java.util.List">
+        DELETE FROM t_risk_trend_analysis WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--获取风险趋势分析数据-->
+    <select id="selectRiskTrendAnalysisData" resultType="com.taiping.entity.riskmanage.RiskTrendAnalysis">
+        SELECT * FROM t_risk_trend_analysis
+    </select>
+</mapper>

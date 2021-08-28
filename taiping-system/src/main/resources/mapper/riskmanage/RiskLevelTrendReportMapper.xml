@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.riskmanage.dao.RiskLevelTrendReportDao">
+    <!--根据月份获取报告数据-->
+    <select id="selectDataByMonth" parameterType="java.lang.Long" resultType="com.taiping.entity.riskmanage.RiskLevelTrendReport">
+        SELECT * FROM t_risk_level_trend_report WHERE generation_time = #{monthTime}
+    </select>
+    <!--批量插入报告数据-->
+    <insert id="batchInsertData" parameterType="java.util.List">
+        INSERT INTO t_risk_level_trend_report(id,risk_level,risk_found_time,risk_count,add_number,ring_growth,process_instruction,activity_type,generation_time) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.riskLevel},#{data.riskFoundTime},#{data.riskCount},#{data.addNumber},#{data.ringGrowth},#{data.processInstruction},#{data.activityType},#{data.generationTime})
+        </foreach>
+    </insert>
+    <!--批量删除报告数据-->
+    <delete id="batchDeleteData" parameterType="java.util.List">
+        DELETE FROM t_risk_level_trend_report WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

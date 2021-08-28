@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.DailyWorkloadDao">
+
+    <insert id="insertDailyWorkloadBatch" parameterType="java.util.List">
+        INSERT INTO t_daily_workload
+        (
+        workload_id, change_date, project_code, project_name,
+        total_workload, daily_workload, work_status, work_status_value, project_status
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.workloadId}, #{item.changeDate}, #{item.projectCode}, #{item.projectName},#{item.totalWorkload},
+            #{item.dailyWorkload},#{item.workStatus},#{item.workStatusValue},#{item.projectStatus}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectDailyWorkloadList" resultType="com.taiping.entity.productivity.DailyWorkload">
+        SELECT workload_id, change_date, project_code, project_name,
+        total_workload, daily_workload, work_status, project_status
+        FROM t_daily_workload
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'projectCode' and filter.operator == 'like'">
+                            project_code LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'projectName' and filter.operator == 'like'">
+                            project_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'changeDate' and filter.operator == 'gte'">
+                            change_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'changeDate' and filter.operator == 'lte'">
+                            change_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'changeDate'">
+                    ORDER BY change_date
+                </when>
+                <when test="sort.sortField == 'projectName'">
+                    ORDER BY project_name
+                </when>
+                <when test="sort.sortField == 'projectCode'">
+                    ORDER BY project_code
+                </when>
+                <when test="sort.sortField == 'totalWorkload'">
+                    ORDER BY total_workload
+                </when>
+                <when test="sort.sortField == 'dailyWorkload'">
+                    ORDER BY daily_workload
+                </when>
+                <when test="sort.sortField == 'workStatus'">
+                    ORDER BY work_status
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectDailyWorkloadListCount" resultType="java.lang.Integer">
+        SELECT COUNT(workload_id)
+        FROM t_daily_workload
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'projectCode' and filter.operator == 'like'">
+                            project_code LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'projectName' and filter.operator == 'like'">
+                            project_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'changeDate' and filter.operator == 'gte'">
+                            change_date <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'changeDate' and filter.operator == 'lte'">
+                            change_date <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="queryWorkloadForTime" parameterType="com.taiping.entity.productivity.ProStatistics"
+            resultType="com.taiping.entity.productivity.DailyWorkload">
+        SELECT change_date, MAX(work_status) work_status
+        FROM t_daily_workload
+        WHERE change_date <![CDATA[ >= ]]> #{startTime}
+        AND change_date <![CDATA[ <= ]]> #{endTime}
+        GROUP BY change_date
+    </select>
+
+</mapper>

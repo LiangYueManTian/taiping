@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.maintenanceplan.dao.AssetBasicInfoDao">
+    <!--批量删除资产基本信息-->
+    <update id="batchDeleteData" parameterType="java.util.List">
+    UPDATE t_asset_basic_info SET is_deleted = 1 WHERE asset_info_id IN
+    <foreach collection="list" item="assetInfoId" open="(" separator="," close=")">
+    #{assetInfoId}
+    </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>运维管理活动提醒邮件</title>
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td><span>尊敬的系统用户：</span></td>
+    </tr>
+    <tr>
+        <td>
+            <table balign="center" border="0" cellpadding="0" cellspacing="0" width="600"
+                   style="border-collapse: collapse;">
+                <tr>
+                    <td><span>&nbsp&nbsp&nbsp&nbsp您好，【太平金科运维分析系统】提醒您，您负责的运维管理活动：</span><br/>
+                        <span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp来源模块：</span><span th:text="${sourceMode}"/><br/>
+                        <span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp产生原因：</span><span th:text="${cause}"/><br/>
+                        <span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp来源对象：</span><span th:text="${sourceName}"/><br/>
+                        <span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp产生日期：</span><span th:text="${createDate}"/><br/>
+                        <span>计划将在</span><span th:text="${completionTime}"/><span>完成，请及时完成该运维管理活动!</span>
+                        <br/><br/><br/><br/>
+                        <span>本邮件由系统发出，确认收到后请忽略，请勿直接回复邮件，谢谢！</span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

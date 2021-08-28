@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.energy.dao.PowerEnergyItemDao">
+
+
+    <!-- 动力能耗各分项信息返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.energy.PowerEnergyItem">
+        <id column="power_energy_id" property="powerEnergyId" />
+        <result column="data_name" property="dataName" />
+        <result column="electric_meter" property="electricMeter"/>
+        <result column="name" property="name" />
+        <result column="all_electric_meter" property="allElectricMeter" />
+        <result column="growth_electric_meter" property="growthElectricMeter" />
+        <result column="year" property="year" />
+        <result column="month" property="month" />
+        <result column="type" property="type" />
+        <result column="route" property="route" />
+        <result column="is_heat_item" property="isHeatItem" />
+        <result column="data_code" property="dataCode" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+
+    <resultMap id="powerEnergyMap" extends="BaseResultMap" type="com.taiping.bean.energy.dto.PowerEnergyItemDto">
+    </resultMap>
+
+
+    <!--动力能耗列表不分页返回值-->
+    <resultMap id="PowerEnergyNotPage" type="com.taiping.bean.energy.dto.PowerEnergyNotPageDto">
+        <result column="dataName" property="dataName" />
+        <result column="name" property="name" />
+        <result column="electric_meter" property="electricMeter" />
+        <result column="type" property="type" />
+        <result column="year" property="year" />
+        <result column="januaryMeter" property="januaryMeter" />
+        <result column="februaryMeter" property="februaryMeter" />
+        <result column="marchMeter" property="marchMeter" />
+        <result column="aprilMeter" property="aprilMeter" />
+        <result column="mayMeter" property="mayMeter" />
+        <result column="juneMeter" property="juneMeter" />
+        <result column="julyMeter" property="julyMeter" />
+        <result column="augustMeter" property="augustMeter" />
+        <result column="septemberMeter" property="septemberMeter" />
+        <result column="octoberMeter" property="octoberMeter" />
+        <result column="novemberMeter" property="novemberMeter" />
+        <result column="decemberMeter" property="decemberMeter" />
+    </resultMap>
+
+
+    <!-- 全部字段查询 -->
+    <sql id="AllColumnList">
+        power_energy_id, data_name, electric_meter, name,
+        all_electric_meter, growth_electric_meter, year, month,
+        type, route, is_heat_item, data_code, data_collection_time, is_deleted,
+        create_user, create_time, update_user, update_time
+    </sql>
+
+    <!--查询动力能耗最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="BaseResultMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_power_energy_item
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+    <!-- 查询动力能耗暖通分项的数据 -->
+    <select id="queryPowerItemMeterForHeat" resultType="com.taiping.bean.energy.dto.analyze.EnergyPowerItemStatisticsDto" parameterType="com.taiping.bean.energy.parameter.PowerEnergyListParameter">
+        select
+        type,  sum(growth_electric_meter) as growthElectricMeter,
+        year, month
+        from t_power_energy_item
+        where 1=1
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and is_deleted = 0
+        <!-- 是动力能耗的数据 -->
+        and is_heat_item = '1'
+        group by year, month
+    </select>
+
+
+
+    <!-- 查询其他动力能耗分项的数据 -->
+    <select id="queryPowerItemMeterForAllItem" resultType="com.taiping.bean.energy.dto.analyze.EnergyPowerItemStatisticsDto" parameterType="com.taiping.bean.energy.parameter.PowerEnergyListParameter">
+        select
+        type,  sum(growth_electric_meter) as growthElectricMeter,
+        year, month
+        from t_power_energy_item
+        where 1=1
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and is_deleted = 0
+        <!-- 需要查询类型总电力能耗的数据 -->
+        and type = '1'
+        group by year, month
+    </select>
+
+
+
+
+
+
+    <!-- 查询每个数据的统计， 汇总 -->
+    <select id="queryStatisticsGroupByData" resultType="com.taiping.bean.energy.dto.analyze.EnergyPowerItemStatisticsDto" parameterType="com.taiping.bean.energy.parameter.PowerEnergyListParameter">
+        select
+        type,  sum(growth_electric_meter) as growthElectricMeter,
+        '1' as isChild, data_code as dataCode,  year, month,
+        type, name, data_name as dataName
+        from t_power_energy_item
+        where 1=1
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and is_deleted = 0
+        and is_heat_item = '1'
+        group by data_code, year, month
+    </select>
+
+
+    <!-- 查询每个类型的数据统计， 汇总 -->
+    <select id="queryStatisticsGroupByType" resultType="com.taiping.bean.energy.dto.analyze.EnergyPowerItemStatisticsDto" parameterType="com.taiping.bean.energy.parameter.PowerEnergyListParameter">
+        select
+        type,  sum(growth_electric_meter) as growthElectricMeter,
+        '0' as isChild, data_code as dataCode,  year, month,
+        type, name, data_name as dataName
+        from t_power_energy_item
+        where 1=1
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and is_deleted = 0
+        and is_heat_item = '1'
+        group by type, year, month
+    </select>
+
+
+
+    <!--查询动力能耗集合不分页-->
+    <select id="queryPowerEnergyListNotPage" parameterType="com.taiping.bean.energy.parameter.PowerEnergyListParameter" resultMap="PowerEnergyNotPage">
+        select data_name as  dataName, name ,  electric_meter, type , year,
+        SUM(IF(`month`='1', growth_electric_meter,0)) as januaryMeter,
+        SUM(IF(`month`='2',growth_electric_meter,0)) as februaryMeter,
+        SUM(IF(`month`='3',growth_electric_meter,0)) as marchMeter,
+        SUM(IF(`month`='4',growth_electric_meter,0)) as aprilMeter,
+        SUM(IF(`month`='5',growth_electric_meter,0)) as mayMeter,
+        SUM(IF(`month`='6',growth_electric_meter,0)) as juneMeter,
+        SUM(IF(`month`='7',growth_electric_meter,0)) as julyMeter,
+        SUM(IF(`month`='8',growth_electric_meter,0)) as augustMeter,
+        SUM(IF(`month`='9',growth_electric_meter,0)) as septemberMeter,
+        SUM(IF(`month`='10',growth_electric_meter,0)) as octoberMeter,
+        SUM(IF(`month`='11',growth_electric_meter,0)) as novemberMeter,
+        SUM(IF(`month`='12',growth_electric_meter,0)) as decemberMeter
+        from t_power_energy_item
+        where 1=1
+
+        <!-- 选择多个设备类型条件 -->
+        <if test="typeList != null and typeList.size() > 0">
+            <if test="typeList.size() == 1">
+                AND type =
+                <foreach collection="typeList" item="type">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="typeList.size() > 1">
+                AND type IN
+                <foreach collection="typeList" item="type" open="(" close=")" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个年份条件 -->
+        <if test="yearList != null and yearList.size() > 0">
+            <if test="yearList.size() == 1">
+                AND year =
+                <foreach collection="yearList" item="year">
+                    #{year}
+                </foreach>
+            </if>
+            <if test="yearList.size() > 1">
+                AND year IN
+                <foreach collection="yearList" item="year" open="(" close=")" separator=",">
+                    #{year}
+                </foreach>
+            </if>
+        </if>
+
+        <!--抄表数据名称-->
+        <if test="dataName != null and dataName != ''">
+            AND data_name LIKE CONCAT('%',#{dataName},'%')
+        </if>
+
+        <!--名称-->
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%',#{name},'%')
+        </if>
+
+        <!--电量仪(度)-->
+        <if test="electricMeter != null and electricMeter != ''">
+            AND electric_meter LIKE CONCAT('%',#{electricMeter},'%')
+        </if>
+
+        <!--设备类型-->
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+
+        <!--年份-->
+        <if test="year != null and year != ''">
+            AND year = #{year}
+        </if>
+        group by data_code, year
+    </select>
+
+    <!--查询动力能耗信息-->
+    <select id="queryPowerEnergyInfoList" parameterType="com.taiping.bean.energy.parameter.PowerEnergyInfoParameter" resultMap="powerEnergyMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_power_energy_item
+        where 1=1
+        <!--数据code集合-->
+        <if test="dataCodeList != null and dataCodeList.size() > 0">
+            <if test="dataCodeList.size() == 1">
+                AND data_code =
+                <foreach collection="dataCodeList" item="dataCode">
+                    #{dataCode}
+                </foreach>
+            </if>
+            <if test="dataCodeList.size() > 1">
+                AND data_code IN
+                <foreach collection="dataCodeList" item="dataCode" open="(" close=")" separator=",">
+                    #{dataCode}
+                </foreach>
+            </if>
+        </if>
+        <!--查询年份参数-->
+        <if test="year != null and year != ''">
+            and year = #{year}
+        </if>
+        <!--查询月份参数-->
+        <if test="month != null and month != ''">
+            and month = #{month}
+        </if>
+    </select>
+
+    <!-- 批量新增动力能耗各分项信息 -->
+    <insert id="insertPowerEnergyItemBatch" parameterType="java.util.List">
+      insert into t_power_energy_item
+      (
+        power_energy_id,
+        data_name,
+        electric_meter,
+        name,
+        all_electric_meter,
+        growth_electric_meter,
+        year,
+        month,
+        type,
+        route,
+        is_heat_item,
+        data_code,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.powerEnergyId},
+                #{item.dataName},
+                #{item.electricMeter},
+                #{item.name},
+                #{item.allElectricMeter},
+                #{item.growthElectricMeter},
+                #{item.year},
+                #{item.month},
+                #{item.type},
+                #{item.route},
+                #{item.isHeatItem},
+                #{item.dataCode},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增动力能耗各分项信息 -->
+    <insert id="insertPowerEnergyItem" parameterType="com.taiping.entity.cabinet.BaseCabinet">
+      insert into t_power_energy_item
+      (
+        power_energy_id,
+        data_name,
+        electric_meter,
+        name,
+        all_electric_meter,
+        growth_electric_meter,
+        year,
+        month,
+        type,
+        route,
+        is_heat_item,
+        data_code,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{powerEnergyId},
+        #{dataName},
+        #{electricMeter},
+        #{name},
+        #{allElectricMeter},
+        #{growthElectricMeter},
+        #{year},
+        #{month},
+        #{type},
+        #{route},
+        #{isHeatItem},
+        #{dataCode},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 删除全部动力能耗各分项信息 -->
+    <delete id="deleteAllPowerEnergyItem">
+        delete from t_power_energy_item
+    </delete>
+
+</mapper>

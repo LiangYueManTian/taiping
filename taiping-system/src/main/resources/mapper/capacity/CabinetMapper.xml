@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.capacity.dao.cabinet.CabinetDao">
+
+    <!-- 机柜信息返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.cabinet.Cabinet">
+        <id column="cabinet_id" property="cabinetId" />
+        <result column="cabinet_unique_name" property="cabinetUniqueName" />
+        <result column="floor" property="floor" />
+        <result column="cabinet_column" property="cabinetColumn" />
+        <result column="cabinet_name" property="cabinetName" />
+        <result column="cabinet_location" property="cabinetLocation" />
+        <result column="design_space_capacity" property="designSpaceCapacity" />
+        <result column="used_space_capacity" property="usedSpaceCapacity" />
+        <result column="unused_space_capacity" property="unusedSpaceCapacity" />
+        <result column="used_space_capacity_percent" property="usedSpaceCapacityPercent" />
+        <result column="rated_power" property="ratedPower" />
+        <result column="used_rated_power" property="usedRatedPower" />
+        <result column="used_rated_percent" property="usedRatedPercent" />
+        <result column="used_actual_power" property="usedActualPower" />
+        <result column="used_actual_percent" property="usedActualPercent" />
+        <result column="month" property="month" />
+        <result column="year" property="year" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+
+    <!-- 机柜信息返回映射对象 -->
+    <resultMap extends="BaseResultMap" id="CabinetDtoMap" type="com.taiping.bean.capacity.cabinet.dto.CabinetDto" >
+        <result column="device_type" property="deviceType" />
+    </resultMap>
+
+    <!-- 楼层统计映射对象 -->
+    <resultMap id="FloorStatisticMap" type="com.taiping.bean.capacity.cabinet.dto.CapacityFloorStatisticsDto">
+        <result column="floorUniqueName" property="floorUniqueName" />
+        <result column="designSpaceCapacity" property="designSpaceCapacity" />
+        <result column="usedSpaceCapacity" property="usedSpaceCapacity" />
+        <result column="ratedPower" property="ratedPower" />
+        <result column="usedActualPower" property="usedActualPower" />
+    </resultMap>
+
+
+    <!-- 功能区统计映射对象 -->
+    <resultMap id="DeviceTypeStatisticMap" type="com.taiping.bean.capacity.cabinet.dto.CapacityDeviceTypeStatisticsDto">
+        <result column="floorUniqueName" property="floorUniqueName" />
+        <result column="deviceType" property="deviceType" />
+        <result column="designSpaceCapacity" property="designSpaceCapacity" />
+        <result column="usedSpaceCapacity" property="usedSpaceCapacity" />
+        <result column="ratedPower" property="ratedPower" />
+        <result column="usedActualPower" property="usedActualPower" />
+    </resultMap>
+
+    <!--楼层统计映射兑现-->
+    <resultMap id="CabinetStatisticsMap" type="com.taiping.bean.capacity.cabinet.dto.CapacityCabinetStatisticsDto">
+        <result column="cabinetUniqueName" property="cabinetUniqueName" />
+        <result column="designSpaceCapacity" property="designSpaceCapacity" />
+        <result column="usedSpaceCapacity" property="usedSpaceCapacity" />
+        <result column="ratedPower" property="ratedPower" />
+        <result column="usedActualPower" property="usedActualPower" />
+    </resultMap>
+
+
+    <!-- 全部字段 -->
+    <sql id="AllColumnList">
+        cabinet_id,  cabinet_unique_name, floor,
+        cabinet_column,  cabinet_name,
+        cabinet_location,  design_space_capacity, used_space_capacity,
+        unused_space_capacity, used_space_capacity_percent, rated_power,
+        used_rated_power,  used_rated_percent,  used_actual_power,
+        used_actual_percent, month, year,
+        data_collection_time,  is_deleted,  create_user,
+        create_time
+    </sql>
+
+
+    <!-- 机柜信息where条件 -->
+    <sql id="whereBySqlForCabinet">
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="bizCondition.floorList != null and bizCondition.floorList.size() > 0">
+            <if test="bizCondition.floorList.size() == 1">
+                AND info.floor =
+                <foreach collection="bizCondition.floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="bizCondition.floorList.size() > 1">
+                AND info.floor IN
+                <foreach collection="bizCondition.floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个功能区筛选条件 -->
+        <if test="bizCondition.deviceTypeList != null and bizCondition.deviceTypeList.size() > 0">
+            <if test="bizCondition.deviceTypeList.size() == 1">
+                AND base.device_type =
+                <foreach collection="bizCondition.deviceTypeList" item="deviceType">
+                    #{deviceType}
+                </foreach>
+            </if>
+            <if test="bizCondition.deviceTypeList.size() > 1">
+                AND base.device_type IN
+                <foreach collection="bizCondition.deviceTypeList" item="deviceType" open="(" close=")" separator=",">
+                    #{deviceType}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个机柜列筛选条件 -->
+        <if test="bizCondition.cabinetColumnList != null and bizCondition.cabinetColumnList.size() > 0">
+            <if test="bizCondition.cabinetColumnList.size() == 1">
+                AND info.cabinet_column =
+                <foreach collection="bizCondition.cabinetColumnList" item="cabinetColumn">
+                    #{cabinetColumn}
+                </foreach>
+            </if>
+            <if test="bizCondition.cabinetColumnList.size() > 1">
+                AND info.cabinet_column IN
+                <foreach collection="bizCondition.cabinetColumnList" item="cabinetColumn" open="(" close=")" separator=",">
+                    #{cabinetColumn}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个机柜筛选条件 -->
+        <if test="bizCondition.cabinetUniqueNameList != null and bizCondition.cabinetUniqueNameList.size() > 0">
+            <if test="bizCondition.cabinetUniqueNameList.size() == 1">
+                AND info.cabinet_unique_name =
+                <foreach collection="bizCondition.cabinetUniqueNameList" item="cabinetUniqueName">
+                    #{cabinetUniqueName}
+                </foreach>
+            </if>
+            <if test="bizCondition.cabinetUniqueNameList.size() > 1">
+                AND info.cabinet_unique_name IN
+                <foreach collection="bizCondition.cabinetUniqueNameList" item="cabinetUniqueName" open="(" close=")" separator=",">
+                    #{cabinetUniqueName}
+                </foreach>
+            </if>
+        </if>
+
+        <!--楼层条件筛选-->
+        <if test="bizCondition.floor != null and bizCondition.floor != ''">
+            AND info.floor = #{bizCondition.floor}
+        </if>
+
+        <!--功能区筛选条件-->
+        <if test="bizCondition.deviceType != null and bizCondition.deviceType != ''">
+            AND base.device_type = #{bizCondition.deviceType}
+        </if>
+
+        <!--机柜列筛选条件-->
+        <if test="bizCondition.cabinetColumn != null and bizCondition.cabinetColumn != ''">
+            AND info.cabinet_column LIKE CONCAT('%',#{bizCondition.cabinetColumn},'%')
+        </if>
+
+        <!--机柜筛选条件-->
+        <if test="bizCondition.cabinetUniqueName != null and bizCondition.cabinetUniqueName != ''">
+            AND info.cabinet_unique_name LIKE CONCAT('%',#{bizCondition.cabinetUniqueName},'%')
+        </if>
+
+
+        <!-- 时间筛选条件 -->
+        <if test="bizCondition.startTime != null and bizCondition.endTime != null">
+            <!--数据采集时间-->
+            AND info.create_time between
+            #{bizCondition.startTime}
+            and
+            #{bizCondition.endTime}
+        </if>
+    </sql>
+
+    <!--机柜基础信息共用sql-->
+    <sql id="orderBySql">
+        <!--排序-->
+        <if test="sortCondition.sortField != null and sortCondition.sortField != '' ">
+            <!--机柜唯一标识名称-->
+            <if test="sortCondition.sortField == 'cabinetUniqueName'">
+                ORDER BY info.cabinet_unique_name
+            </if>
+            <!--楼层-->
+            <if test="sortCondition.sortField == 'floor'">
+                ORDER BY info.floor
+            </if>
+            <!--机柜名称-->
+            <if test="sortCondition.sortField == 'cabinetName'">
+                ORDER BY info.cabinet_name
+            </if>
+            <!--机柜列-->
+            <if test="sortCondition.sortField == 'cabinetColumn'">
+                ORDER BY cabinet_column
+            </if>
+            <!--设施类型-->
+            <if test="sortCondition.sortField == 'deviceType'">
+                ORDER BY base.device_type
+            </if>
+            <!--机柜位置-->
+            <if test="sortCondition.sortField == 'cabinetLocation'">
+                ORDER BY base.cabinet_location
+            </if>
+            <!--设计u数-->
+            <if test="sortCondition.sortField == 'designSpaceCapacity'">
+                ORDER BY info.design_space_capacity
+            </if>
+            <!--已使用u数-->
+            <if test="sortCondition.sortField == 'usedSpaceCapacity'">
+                ORDER BY info.used_space_capacity
+            </if>
+            <!--未使用u数-->
+            <if test="sortCondition.sortField == 'unusedSpaceCapacity'">
+                ORDER BY info.unused_space_capacity
+            </if>
+            <!--已使用空间占比-->
+            <if test="sortCondition.sortField == 'usedSpaceCapacityPercent'">
+                ORDER BY info.used_space_capacity_percent
+            </if>
+            <!--额定功率-->
+            <if test="sortCondition.sortField == 'ratedPower'">
+                ORDER BY info.rated_power
+            </if>
+            <!--使用额定功率-->
+            <if test="sortCondition.sortField == 'usedRatedPower'">
+                ORDER BY info.used_rated_power
+            </if>
+            <!--额定已用功率百分比-->
+            <if test="sortCondition.sortField == 'usedRatedPercent'">
+                ORDER BY info.used_rated_percent
+            </if>
+            <!--已用实际功率-->
+            <if test="sortCondition.sortField == 'usedActualPower'">
+                ORDER BY info.used_actual_power
+            </if>
+            <!--已用实际功率百分比-->
+            <if test="sortCondition.sortField == 'usedActualPercent'">
+                ORDER BY info.used_actual_percent
+            </if>
+            <!--数据创建时间-->
+            <if test="sortCondition.sortField == 'dataCollectionTime'">
+                ORDER BY info.data_collection_time
+            </if>
+            <!--创建时间-->
+            <if test="sortCondition.sortField == 'createTime'">
+                ORDER BY info.create_time
+            </if>
+            <!-- 字段排序 -->
+            <if test="sortCondition.sortRule != null and sortCondition.sortRule != ''">
+                ${sortCondition.sortRule}
+            </if>
+        </if>
+    </sql>
+
+
+
+    <!--查询机柜最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="CabinetDtoMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_cabinet
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+
+
+    <!-- 统计数据的机柜列占用额定容量的数据 -->
+    <select id="queryCapacityGroupByColumn" resultType="com.taiping.bean.capacity.cabinet.dto.CapacityColumnStatisticsDto" parameterType="com.taiping.bean.capacity.cabinet.parameter.CabinetInfoListParameter">
+        select
+        sum(info.design_space_capacity) as designSpaceCapacity , sum(info.used_space_capacity) as usedSpaceCapacity,
+        sum(info.used_actual_power) as usedActualPower, sum(base.rated_power) as ratedPower,
+        base.array_cabinet_design_load as arrayCabinetDesignLoad,
+        base.array_cabinet_name as arrayCabinetName,
+        info.year as year, info.month as month
+        from t_cabinet info left join t_base_cabinet base on base.cabinet_unique_name = info.cabinet_unique_name
+        where 1=1
+        <if test="month != null">
+            and info.month = #{month}
+        </if>
+        <if test="year != null">
+            and info.year = #{year}
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND info.data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and base.cabinet_base_id is not null
+        and base.electric_reserve = '0'
+        and base.device_type != '5'
+        GROUP BY base.array_cabinet_name, info.year, info.month
+    </select>
+
+
+    <!-- 统计数据的占用空间容量和电力容量的查询 -->
+    <select id="queryCapacityByGroupByFloor" resultMap="FloorStatisticMap" parameterType="com.taiping.bean.capacity.cabinet.parameter.CabinetInfoListParameter">
+      select
+        sum(info.design_space_capacity) as designSpaceCapacity , sum(info.used_space_capacity) as usedSpaceCapacity,
+        sum(info.used_actual_power) as usedActualPower, sum(base.rated_power) as ratedPower,
+        base.floor_unique_name as floorUniqueName,
+        info.year as year, info.month as month
+        from t_cabinet info left join t_base_cabinet base on base.cabinet_unique_name = info.cabinet_unique_name
+        where 1=1
+        <if test="month != null">
+            and info.month = #{month}
+        </if>
+        <if test="year != null">
+            and info.year = #{year}
+        </if>
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="floorList != null and floorList.size() > 0">
+            <if test="floorList.size() == 1">
+                AND info.floor =
+                <foreach collection="floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="floorList.size() > 1">
+                AND info.floor IN
+                <foreach collection="floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND info.data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and base.cabinet_base_id is not null
+        and base.electric_reserve = '0'
+        and base.device_type != '5'
+        GROUP BY info.floor, info.year, info.month
+    </select>
+
+    <!--查询容量信息根据功能区分组-->
+    <select id="queryCapacityByGroupByDevice" resultMap="DeviceTypeStatisticMap" parameterType="com.taiping.bean.capacity.cabinet.parameter.CabinetInfoListParameter">
+        select
+        sum(info.design_space_capacity) as designSpaceCapacity , sum(info.used_space_capacity) as usedSpaceCapacity,
+        sum(info.used_actual_power) as usedActualPower, sum(base.rated_power) as ratedPower,
+        base.device_type as deviceType,
+        base.floor_unique_name as floorUniqueName,
+        info.year as year, info.month as month
+        from t_cabinet info left join t_base_cabinet base on base.cabinet_unique_name = info.cabinet_unique_name
+        where 1=1
+        <if test="month != null">
+            and info.month = #{month}
+        </if>
+        <if test="year != null">
+            and info.year = #{year}
+        </if>
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="floorList != null and floorList.size() > 0">
+            <if test="floorList.size() == 1">
+                AND info.floor =
+                <foreach collection="floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="floorList.size() > 1">
+                AND info.floor IN
+                <foreach collection="floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND info.data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and base.cabinet_base_id is not null
+        and base.electric_reserve = '0'
+        and base.device_type != '5'
+        GROUP BY base.device_type, info.year, info.month
+    </select>
+
+    <!-- 统计数据的占用空间容量和电力容量的查询,根据功能区分组 -->
+    <select id="queryCapacityByGroupByFloorAndDevice" resultMap="DeviceTypeStatisticMap" parameterType="com.taiping.bean.capacity.cabinet.parameter.CabinetInfoListParameter">
+        select
+        sum(info.design_space_capacity) as designSpaceCapacity , sum(info.used_space_capacity) as usedSpaceCapacity,
+        sum(info.used_actual_power) as usedActualPower, sum(base.rated_power) as ratedPower,
+        base.device_type as deviceType,
+        base.floor_unique_name as floorUniqueName,
+        info.year as year, info.month as month
+        from t_cabinet info left join t_base_cabinet base on base.cabinet_unique_name = info.cabinet_unique_name
+        where 1=1
+        <if test="month != null">
+            and info.month = #{month}
+        </if>
+        <if test="year != null">
+            and info.year = #{year}
+        </if>
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="floorList != null and floorList.size() > 0">
+            <if test="floorList.size() == 1">
+                AND info.floor =
+                <foreach collection="floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="floorList.size() > 1">
+                AND info.floor IN
+                <foreach collection="floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND info.data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and base.cabinet_base_id is not null
+        and base.electric_reserve = '0'
+        and base.device_type != '5'
+        GROUP BY info.floor, base.device_type
+    </select>
+
+
+    <!-- 统计数据的占用空间容量和电力容量的查询 -->
+    <select id="queryCapacityByPdu" resultType="com.taiping.bean.capacity.cabinet.dto.CapacityPduStatisticsDto" parameterType="com.taiping.bean.capacity.cabinet.parameter.CabinetInfoListParameter">
+        select
+        info.used_actual_power as usedActualPower, base.rated_power as ratedPower,
+        base.cabinet_unique_name as cabinetUniqueName,
+        info.year as year, info.month as month
+        from t_cabinet info left join t_base_cabinet base on base.cabinet_unique_name = info.cabinet_unique_name
+        where 1=1
+        <if test="month != null">
+            and info.month = #{month}
+        </if>
+        <if test="year != null">
+            and info.year = #{year}
+        </if>
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="floorList != null and floorList.size() > 0">
+            <if test="floorList.size() == 1">
+                AND info.floor =
+                <foreach collection="floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="floorList.size() > 1">
+                AND info.floor IN
+                <foreach collection="floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND info.data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and base.cabinet_base_id is not null
+        and base.electric_reserve = '0'
+        and base.device_type != '5'
+        GROUP BY info.cabinet_unique_name ,info.year, info.month
+    </select>
+
+    <!-- 统计数据的占用空间容量和电力容量的查询 -->
+    <select id="queryCapacityByCabinet" resultMap="CabinetStatisticsMap" parameterType="com.taiping.bean.capacity.cabinet.parameter.CabinetInfoListParameter">
+        select
+        info.design_space_capacity as designSpaceCapacity , info.used_space_capacity as usedSpaceCapacity,
+        info.used_actual_power as usedActualPower, base.rated_power as ratedPower,
+        base.cabinet_unique_name as cabinetUniqueName,
+        info.year as year, info.month as month
+        from t_cabinet info left join t_base_cabinet base on base.cabinet_unique_name = info.cabinet_unique_name
+        where 1=1
+        <if test="month != null">
+            and info.month = #{month}
+        </if>
+        <if test="year != null">
+            and info.year = #{year}
+        </if>
+        <!-- 选择多个楼层筛选条件 -->
+        <if test="floorList != null and floorList.size() > 0">
+            <if test="floorList.size() == 1">
+                AND info.floor =
+                <foreach collection="floorList" item="floor">
+                    #{floor}
+                </foreach>
+            </if>
+            <if test="floorList.size() > 1">
+                AND info.floor IN
+                <foreach collection="floorList" item="floor" open="(" close=")" separator=",">
+                    #{floor}
+                </foreach>
+            </if>
+        </if>
+        <!-- 时间筛选条件 -->
+        <if test="startTime != null and endTime != null">
+            <!--数据采集时间-->
+            AND info.data_collection_time between
+            #{startTime}
+            and
+            #{endTime}
+        </if>
+        and base.cabinet_base_id is not null
+        and base.electric_reserve = '0'
+        and base.device_type != '5'
+        GROUP BY info.cabinet_unique_name ,info.year, info.month
+    </select>
+
+
+
+    <!-- 查询机柜信息列表数据 -->
+    <select id="queryCabinetList" resultMap="CabinetDtoMap" parameterType="com.taiping.entity.QueryCondition">
+        select
+        info.cabinet_id,
+        info.cabinet_unique_name,
+        info.floor,
+        base.device_type,
+        info.cabinet_column,
+        info.cabinet_name,
+        info.cabinet_location,
+        info.design_space_capacity,
+        info.used_space_capacity,
+        info.unused_space_capacity,
+        info.used_space_capacity_percent,
+        info.rated_power,
+        info.used_rated_power,
+        info.used_rated_percent,
+        info.used_actual_power,
+        info.used_actual_percent,
+        info.month,
+        info.year,
+        info.data_collection_time,
+        info.is_deleted,
+        info.create_user,
+        info.create_time
+        from t_cabinet info
+        left join t_base_cabinet base on info.cabinet_unique_name = base.cabinet_unique_name
+        where 1=1
+        <!-- 查询条件 -->
+        <include refid="whereBySqlForCabinet"/>
+
+        <!-- 排序条件 -->
+        <include refid="orderBySql"/>
+        <if test="pageCondition.beginNum != null and pageCondition.pageSize != null">
+            LIMIT
+            #{pageCondition.beginNum},#{pageCondition.pageSize}
+        </if>
+    </select>
+
+    <!-- 查询机柜信息列表数据个数 -->
+    <select id="queryCabinetCount" resultType="java.lang.Integer" parameterType="com.taiping.entity.QueryCondition">
+        select
+        count(*)
+        from t_cabinet info
+        left join t_base_cabinet base on info.cabinet_unique_name = base.cabinet_unique_name
+        where 1=1
+        <!-- 查询条件 -->
+        <include refid="whereBySqlForCabinet"/>
+    </select>
+
+    <!-- 批量新增机柜信息 -->
+    <insert id="insertCabinetBatch" parameterType="java.util.List">
+      insert into t_cabinet
+      (
+        cabinet_id,
+        cabinet_unique_name,
+        floor,
+        cabinet_column,
+        cabinet_name,
+        cabinet_location,
+        design_space_capacity,
+        used_space_capacity,
+        unused_space_capacity,
+        used_space_capacity_percent,
+        rated_power,
+        used_rated_power,
+        used_rated_percent,
+        used_actual_power,
+        used_actual_percent,
+        month,
+        year,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.cabinetId},
+                #{item.cabinetUniqueName},
+                #{item.floor},
+                #{item.cabinetColumn},
+                #{item.cabinetName},
+                #{item.cabinetLocation},
+                #{item.designSpaceCapacity},
+                #{item.usedSpaceCapacity},
+                #{item.unusedSpaceCapacity},
+                #{item.usedSpaceCapacityPercent},
+                #{item.ratedPower},
+                #{item.usedRatedPower},
+                #{item.usedRatedPercent},
+                #{item.usedActualPower},
+                #{item.usedActualPercent},
+                #{item.month},
+                #{item.year},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增机柜信息 -->
+    <insert id="insertCabinet" parameterType="com.taiping.entity.cabinet.Cabinet">
+      insert into t_cabinet
+      (
+        cabinet_id,
+        cabinet_unique_name,
+        floor,
+        cabinet_column,
+        cabinet_name,
+        cabinet_location,
+        design_space_capacity,
+        used_space_capacity,
+        unused_space_capacity,
+        used_space_capacity_percent,
+        rated_power,
+        used_rated_power,
+        used_rated_percent,
+        used_actual_power,
+        used_actual_percent,
+        month,
+        year,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{cabinetId},
+        #{cabinetUniqueName},
+        #{floor},
+        #{cabinetColumn},
+        #{cabinetName},
+        #{cabinetLocation},
+        #{designSpaceCapacity},
+        #{usedSpaceCapacity},
+        #{unusedSpaceCapacity},
+        #{usedSpaceCapacityPercent},
+        #{ratedPower},
+        #{usedRatedPower},
+        #{usedRatedPercent},
+        #{usedActualPower},
+        #{usedActualPercent},
+        #{month},
+        #{year},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 根据条件删除机柜信息 -->
+    <delete id="deleteCabinet" parameterType="com.taiping.entity.cabinet.Cabinet">
+        delete from t_cabinet
+        where 1=1
+        <!--月份-->
+        <if test="month != null">
+            and month = #{month}
+        </if>
+        <!--年份-->
+        <if test="year != null">
+            and year = #{year}
+        </if>
+    </delete>
+
+</mapper>

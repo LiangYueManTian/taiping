@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.problem.dao.ProblemStatisticsDao">
+    <insert id="insertProblemStatisticsBatch" parameterType="java.util.List">
+        INSERT INTO t_problem_statistics
+        (
+        statistics_id, statistics_type, value_type, value_number, month_percentage,
+        year_percentage, value_date, instruction, manage_id, source_name, source_code, cause
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.statisticsId}, #{item.statisticsType}, #{item.valueType}, #{item.valueNumber},
+            #{item.monthPercentage}, #{item.yearPercentage}, #{item.valueDate}, #{item.instruction},
+            #{item.manageId}, #{item.sourceName}, #{item.sourceCode}, #{item.cause}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryReportForCurrent" resultType="com.taiping.entity.problem.ProblemStatistics">
+        SELECT statistics_id, statistics_type, value_type, value_number, month_percentage, year_percentage, value_date,
+        instruction, manage_id, source_name, source_code, cause, solve_instruction, activity_type, report_type
+        FROM t_problem_statistics
+        WHERE report_type = '1'
+        ORDER BY statistics_type ASC, value_type ASC
+    </select>
+
+    <select id="queryReportForTime" parameterType="java.lang.Long"
+            resultType="com.taiping.entity.problem.ProblemStatistics">
+        SELECT statistics_id, statistics_type, value_type, value_number, month_percentage, year_percentage, value_date,
+        instruction, manage_id, source_name, source_code, cause, solve_instruction, activity_type, report_type
+        FROM t_problem_statistics
+        WHERE report_type IS NOT NULL AND value_date = #{date}
+        ORDER BY statistics_type ASC, value_type ASC
+    </select>
+
+    <update id="cancelReportCurrent">
+        UPDATE t_problem_statistics
+        SET report_type = '0'
+        WHERE
+        report_type = '1'
+    </update>
+
+    <update id="updateBatchProblemStatistics">
+        UPDATE t_problem_statistics
+        SET report_type = '1', solve_instruction = CASE manage_id
+        <foreach collection="list" item="item" separator="" close="" open="">
+            WHEN #{item.manageId} THEN #{item.solveInstruction}
+        </foreach>
+        END, activity_type = CASE manage_id
+        <foreach collection="list" item="item" separator="" close="" open="">
+            WHEN #{item.manageId} THEN #{item.activityType}
+        </foreach>
+        END
+        WHERE manage_id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item.manageId,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+</mapper>

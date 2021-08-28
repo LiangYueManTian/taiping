@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.ChangePlanDao">
+
+    <insert id="insertChangePlan" parameterType="com.taiping.entity.productivity.ChangePlan">
+        INSERT INTO t_change_plan
+        (
+        change_id, report_person, project_name, device_type,
+        device_number, expect_start_time, expect_end_time, remark, create_time
+        )
+        VALUES
+        (
+        #{changeId}, #{reportPerson}, #{projectName}, #{deviceType},
+        #{deviceNumber}, #{expectStartTime}, #{expectEndTime}, #{remark}, #{createTime}
+        )
+    </insert>
+
+    <update id="updateChangePlan" parameterType="com.taiping.entity.productivity.ChangePlan">
+        UPDATE t_change_plan SET
+        report_person = #{reportPerson}, project_name = #{projectName}, device_type =  #{deviceType},
+        device_number = #{deviceNumber}, expect_start_time =  #{expectStartTime}, expect_end_time = #{expectEndTime},
+        remark = #{remark}
+        WHERE change_id = #{changeId} AND is_deleted != '1'
+    </update>
+
+    <update id="deleteChangePlan" parameterType="java.util.List">
+        UPDATE t_change_plan SET is_deleted = '1'
+        WHERE  is_deleted != '1' AND change_id IN
+        <foreach collection="list" separator="," item="item" open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="selectChangePlanForName" resultType="java.lang.String"
+            parameterType="com.taiping.entity.productivity.ChangePlan">
+        SELECT change_id FROM t_change_plan
+        WHERE project_name = #{projectName} AND is_deleted != '1'
+        <if test="changeId != null and changeId != ''">
+            AND change_id != #{changeId}
+        </if>
+    </select>
+
+    <select id="selectChangePlanById" parameterType="string" resultType="com.taiping.entity.productivity.ChangePlan">
+        SELECT change_id, report_person, project_name, device_type,
+        device_number, expect_start_time, expect_end_time, remark, create_time
+        FROM t_change_plan
+        WHERE change_id = #{changeId} AND is_deleted != '1'
+    </select>
+
+    <select id="selectChangePlanList" resultType="com.taiping.entity.productivity.ChangePlan">
+        SELECT change_id, report_person, project_name, device_type,
+        device_number, expect_start_time, expect_end_time, remark, create_time
+        FROM t_change_plan
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'reportPerson' and filter.operator == 'like'">
+                            report_person LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'projectName' and filter.operator == 'like'">
+                            project_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'createTime' and filter.operator == 'gte'">
+                            create_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'createTime' and filter.operator == 'lte'">
+                            create_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+            AND is_deleted != '1'
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'reportPerson'">
+                    ORDER BY report_person
+                </when>
+                <when test="sort.sortField == 'projectName'">
+                    ORDER BY project_name
+                </when>
+                <when test="sort.sortField == 'expectStartTime'">
+                    ORDER BY expect_start_time
+                </when>
+                <when test="sort.sortField == 'expectEndTime'">
+                    ORDER BY expect_end_time
+                </when>
+                <when test="sort.sortField == 'createTime'">
+                    ORDER BY create_time
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectChangePlanListCount" resultType="java.lang.Integer">
+        SELECT COUNT(change_id) FROM t_change_plan
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'reportPerson' and filter.operator == 'like'">
+                            report_person LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'projectName' and filter.operator == 'like'">
+                            project_name LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'createTime' and filter.operator == 'gte'">
+                            create_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'createTime' and filter.operator == 'lte'">
+                            create_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+            AND is_deleted != '1'
+        </where>
+    </select>
+
+    <select id="selectChangePlanForTime" parameterType="com.taiping.entity.productivity.ProStatistics"
+            resultType="com.taiping.entity.productivity.ChangePlan">
+        SELECT change_id, device_number, expect_start_time, expect_end_time
+        FROM t_change_plan
+        WHERE expect_end_time <![CDATA[ >= ]]> #{startTime}
+        AND expect_start_time  <![CDATA[ <= ]]> #{endTime}
+    </select>
+</mapper>

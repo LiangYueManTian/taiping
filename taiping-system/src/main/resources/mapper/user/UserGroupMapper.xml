@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.user.dao.UserGroupDao">
+    <!--获取用户组列表-->
+    <select id="getUserGroupList" resultType="com.taiping.entity.user.UserGroup">
+        SELECT * FROM t_user_group
+    </select>
+
+    <!--根据用户组id获取用户组-->
+    <select id="getUserGroupById" resultType="com.taiping.entity.user.UserGroup" parameterType="String">
+        SELECT * FROM t_user_group WHERE user_group_id = #{userGroupId}
+    </select>
+
+    <!--根据用户组名获取用户组-->
+    <select id="getUserGroupByName" resultType="com.taiping.entity.user.UserGroup" parameterType="String">
+        SELECT * FROM t_user_group WHERE user_group_name = #{userGroupName}
+    </select>
+
+    <!--根据用户组id获取用户组中用户列表-->
+    <select id="getUserListByUserGroupId" resultType="com.taiping.entity.user.UserInfo" parameterType="String">
+        SELECT * FROM t_user_info WHERE user_group_id = #{userGroupId}
+    </select>
+
+    <!--获取默认用户组-->
+    <select id="getDefaultUserGroup" resultType="com.taiping.entity.user.UserGroup">
+        SELECT * FROM t_user_group WHERE is_default_group = 1
+    </select>
+
+    <!--添加用户组-->
+    <insert id="addUserGroup" parameterType="com.taiping.entity.user.UserGroup">
+        INSERT INTO t_user_group(user_group_id,user_group_name,is_default_group,
+        description,remark,is_deleted,create_user,create_time,update_user,update_time)
+        VALUES (#{userGroupId},#{userGroupName},#{isDefaultGroup},#{description},
+        #{remark},#{isDeleted},#{createUser},#{createTime},#{updateUser},#{updateTime})
+    </insert>
+
+    <!--批量删除用户组-->
+    <delete id="deleteUserGroups" parameterType="java.util.List">
+        DELETE FROM t_user_group WHERE user_group_id IN
+        <foreach collection="list" item="userGroupId" open="(" separator="," close=")">
+            #{userGroupId}
+        </foreach>
+    </delete>
+
+    <!--修改用户组-->
+    <update id="updateUserGroup" parameterType="com.taiping.entity.user.UserGroup">
+        UPDATE t_user_group
+        <set>
+            <if test="userGroupName != null and userGroupName != ''">user_group_name = #{userGroupName},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="isDeleted != null and isDeleted != ''">is_deleted = #{isDeleted},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+            <if test="updateTime != null and updateTime !=''">update_time = #{updateTime},</if>
+        </set>
+        WHERE user_group_id = #{userGroupId}
+    </update>
+
+    <!--删除用户组菜单权限-->
+    <delete id="deleteUserGroupMenuPermission" parameterType="String">
+        DELETE FROM t_user_group_permission WHERE user_group_id IN
+        <foreach collection="list" item="userGroupId" open="(" separator="," close=")">
+            #{userGroupId}
+        </foreach>
+    </delete>
+
+    <!--添加用户组菜单权限-->
+    <insert id="addUserGroupMenuPermission" parameterType="java.util.List">
+        INSERT INTO t_user_group_permission(permission_id,user_group_id,menu_id) VALUES 
+        <foreach collection="list" item="userGroupPermission" index="index" separator=",">
+            (#{userGroupPermission.permissionId},
+            #{userGroupPermission.userGroupId},
+            #{userGroupPermission.menuId})
+        </foreach>
+    </insert>
+
+    <sql id="queryCondition">
+        <if test="userGroupQueryCondition.userGroupName != null and userGroupQueryCondition.userGroupName != ''">AND user_group_name LIKE #{userGroupQueryCondition.userGroupName}</if>
+        <if test="userGroupQueryCondition.description != null and userGroupQueryCondition.description != ''">AND description LIKE #{userGroupQueryCondition.description}</if>
+        <if test="userGroupQueryCondition.remark != null and userGroupQueryCondition.remark != ''">AND remark LIKE #{userGroupQueryCondition.remark}</if>
+    </sql>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.productivity.dao.WorkloadStatisticsDao">
+
+    <resultMap id="BaseMapper" type="com.taiping.entity.productivity.WorkloadStatistics">
+        <id column="workload_id " property="workloadId"/>
+        <result column="workload_date" property="workloadDate"/>
+        <result column="total_workload" property="totalWorkload"/>
+        <result column="free_percentage" property="freePercentage"/>
+        <result column="normal_percentage" property="normalPercentage"/>
+        <result column="full_percentage" property="fullPercentage"/>
+    </resultMap>
+
+    <insert id="insertWorkloadStatistics" parameterType="com.taiping.entity.productivity.WorkloadStatistics">
+        INSERT INTO t_workload_statistics
+        (
+        workload_id, workload_date, total_workload, free_percentage, normal_percentage, full_percentage
+        )
+        VALUES
+        (
+        #{workloadId}, #{workloadDate}, #{totalWorkload}, #{freePercentage}, #{normalPercentage}, #{fullPercentage}
+        )
+    </insert>
+
+    <select id="queryWorkloadStatisticsForTime" parameterType="com.taiping.entity.productivity.ProStatistics"
+    resultMap="BaseMapper">
+        SELECT workload_id, workload_date, total_workload, free_percentage, normal_percentage, full_percentage
+        FROM t_workload_statistics
+        WHERE workload_date <![CDATA[ >= ]]> #{startTime}
+        AND workload_date <![CDATA[ <= ]]> #{endTime}
+        ORDER BY workload_date ASC
+    </select>
+</mapper>

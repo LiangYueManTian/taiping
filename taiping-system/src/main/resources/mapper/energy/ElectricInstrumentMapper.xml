@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.energy.dao.ElectricInstrumentDao">
+
+
+    <!-- 电量仪表表返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.energy.ElectricInstrument">
+        <id column="electric_instrument_id" property="electricInstrumentId"/>
+        <result column="data_name" property="dataName"/>
+        <result column="electric_meter" property="electricMeter"/>
+        <result column="name" property="name"/>
+        <result column="all_electric_meter" property="allElectricMeter"/>
+        <result column="growth_electric_meter" property="growthElectricMeter"/>
+        <result column="year" property="year"/>
+        <result column="month" property="month"/>
+        <result column="type" property="type"/>
+        <result column="data_code" property="dataCode"/>
+        <result column="data_collection_time" property="dataCollectionTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 总能耗map -->
+    <resultMap id="allEnergyMap" extends="BaseResultMap" type="com.taiping.bean.energy.dto.ElectricInstrumentDto">
+    </resultMap>
+
+
+    <!--总能耗列表不分页返回值-->
+    <resultMap id="AllEnergyNotPage" type="com.taiping.bean.energy.dto.ElectricInstrumentNotPageDto">
+        <result column="dataName" property="dataName"/>
+        <result column="name" property="name"/>
+        <result column="electric_meter" property="electricMeter"/>
+        <result column="type" property="type"/>
+        <result column="year" property="year"/>
+        <result column="januaryMeter" property="januaryMeter"/>
+        <result column="februaryMeter" property="februaryMeter"/>
+        <result column="marchMeter" property="marchMeter"/>
+        <result column="aprilMeter" property="aprilMeter"/>
+        <result column="mayMeter" property="mayMeter"/>
+        <result column="juneMeter" property="juneMeter"/>
+        <result column="julyMeter" property="julyMeter"/>
+        <result column="augustMeter" property="augustMeter"/>
+        <result column="septemberMeter" property="septemberMeter"/>
+        <result column="octoberMeter" property="octoberMeter"/>
+        <result column="novemberMeter" property="novemberMeter"/>
+        <result column="decemberMeter" property="decemberMeter"/>
+    </resultMap>
+
+    <!--全部字段 -->
+    <sql id="AllColumnList">
+        electric_instrument_id, data_name, electric_meter, name,
+        all_electric_meter, growth_electric_meter, year, month,
+        type, data_code, data_collection_time, is_deleted, create_user,
+        create_time, update_user, update_time
+    </sql>
+
+
+    <!--查询总能耗最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="BaseResultMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_electric_instrument
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+
+    <!--查询总能耗信息-->
+    <select id="queryAllEnergyInfoList"
+            parameterType="com.taiping.bean.energy.parameter.ElectricInstrumentInfoParameter" resultMap="allEnergyMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_electric_instrument
+        where 1=1
+        <!--数据code集合-->
+        <if test="dataCodeList != null and dataCodeList.size() > 0">
+            <if test="dataCodeList.size() == 1">
+                AND data_code =
+                <foreach collection="dataCodeList" item="dataCode">
+                    #{dataCode}
+                </foreach>
+            </if>
+            <if test="dataCodeList.size() > 1">
+                AND data_code IN
+                <foreach collection="dataCodeList" item="dataCode" open="(" close=")" separator=",">
+                    #{dataCode}
+                </foreach>
+            </if>
+        </if>
+        <!--查询年份参数-->
+        <if test="year != null and year != ''">
+            and year = #{year}
+        </if>
+        <!--查询月份参数-->
+        <if test="month != null and month != ''">
+            and month = #{month}
+        </if>
+    </select>
+
+
+    <!--查询总能耗集合不分页-->
+    <select id="queryAllEnergyListNotPage"
+            parameterType="com.taiping.bean.energy.parameter.ElectricInstrumentListParameter"
+            resultMap="AllEnergyNotPage">
+        select data_name as dataName, name , electric_meter, type , year,
+        SUM(IF(`month`='1', growth_electric_meter,0)) as januaryMeter,
+        SUM(IF(`month`='2',growth_electric_meter,0)) as februaryMeter,
+        SUM(IF(`month`='3',growth_electric_meter,0)) as marchMeter,
+        SUM(IF(`month`='4',growth_electric_meter,0)) as aprilMeter,
+        SUM(IF(`month`='5',growth_electric_meter,0)) as mayMeter,
+        SUM(IF(`month`='6',growth_electric_meter,0)) as juneMeter,
+        SUM(IF(`month`='7',growth_electric_meter,0)) as julyMeter,
+        SUM(IF(`month`='8',growth_electric_meter,0)) as augustMeter,
+        SUM(IF(`month`='9',growth_electric_meter,0)) as septemberMeter,
+        SUM(IF(`month`='10',growth_electric_meter,0)) as octoberMeter,
+        SUM(IF(`month`='11',growth_electric_meter,0)) as novemberMeter,
+        SUM(IF(`month`='12',growth_electric_meter,0)) as decemberMeter
+        from t_electric_instrument
+        where 1=1
+
+        <!-- 选择多个设备类型条件 -->
+        <if test="typeList != null and typeList.size() > 0">
+            <if test="typeList.size() == 1">
+                AND type =
+                <foreach collection="typeList" item="type">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="typeList.size() > 1">
+                AND type IN
+                <foreach collection="typeList" item="type" open="(" close=")" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个年份条件 -->
+        <if test="yearList != null and yearList.size() > 0">
+            <if test="yearList.size() == 1">
+                AND year =
+                <foreach collection="yearList" item="year">
+                    #{year}
+                </foreach>
+            </if>
+            <if test="yearList.size() > 1">
+                AND year IN
+                <foreach collection="yearList" item="year" open="(" close=")" separator=",">
+                    #{year}
+                </foreach>
+            </if>
+        </if>
+
+        <!--抄表数据名称-->
+        <if test="dataName != null and dataName != ''">
+            AND data_name LIKE CONCAT('%',#{dataName},'%')
+        </if>
+
+        <!--名称-->
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%',#{name},'%')
+        </if>
+
+        <!--电量仪(度)-->
+        <if test="electricMeter != null and electricMeter != ''">
+            AND electric_meter LIKE CONCAT('%',#{electricMeter},'%')
+        </if>
+
+        <!--设备类型-->
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+
+        <!--年份-->
+        <if test="year != null and year != ''">
+            AND year = #{year}
+        </if>
+        group by data_code, year
+    </select>
+
+    <!-- 批量新增电量仪表信息 -->
+    <insert id="insertElectricInstrumentBatch" parameterType="java.util.List">
+        insert into t_electric_instrument
+        (
+        electric_instrument_id,
+        data_name,
+        electric_meter,
+        name,
+        all_electric_meter,
+        growth_electric_meter,
+        year,
+        month,
+        type,
+        data_code,
+        data_collection_time,
+        create_user,
+        create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+            #{item.electricInstrumentId},
+            #{item.dataName},
+            #{item.electricMeter},
+            #{item.name},
+            #{item.allElectricMeter},
+            #{item.growthElectricMeter},
+            #{item.year},
+            #{item.month},
+            #{item.type},
+            #{item.dataCode},
+            #{item.dataCollectionTime},
+            #{item.createUser},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增电量仪表信息 -->
+    <insert id="insertElectricInstrument" parameterType="com.taiping.entity.cabinet.BaseCabinet">
+      insert into t_electric_instrument
+      (
+        electric_instrument_id,
+        data_name,
+        electric_meter,
+        name,
+        all_electric_meter,
+        growth_electric_meter,
+        year,
+        month,
+        type,
+        data_code,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{electricInstrumentId},
+        #{dataName},
+        #{electricMeter},
+        #{name},
+        #{allElectricMeter},
+        #{growthElectricMeter},
+        #{year},
+        #{month},
+        #{type},
+        #{dataCode},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 删除全部电量仪表信息 -->
+    <delete id="deleteAllElectricInstrument">
+        delete from t_electric_instrument
+    </delete>
+
+    <!--获取pue 值-->
+    <select id="getBidScreenByPueValue" resultType="com.taiping.bean.energy.dto.BigScreenDto">
+SELECT
+	t.threshold_value as pueValue,
+	t.`year` as `year`,
+	t. MONTH as month
+FROM
+	t_energy_analyze_info t,
+(
+		SELECT
+			*
+		FROM
+			t_energy_analyze_info t
+		GROUP BY
+			t.`analyze_year`,
+			t.`analyze_month`
+		ORDER BY
+				t.`analyze_year` desc,
+				t.`analyze_month` DESC
+		LIMIT 1
+	) f
+WHERE
+ t.analyze_year = f.analyze_year
+AND t.analyze_month = f.analyze_month
+AND t.module = 3
+    </select>
+
+    <!--获取空间容量 值-->
+    <select id="getBidScreenByCabinet" resultType="com.taiping.bean.energy.dto.BigScreenDto">
+SELECT
+	sum(t.used_space_capacity) AS useSpace,
+	sum(t.unused_space_capacity) AS unUseSpace,
+	t. YEAR as year,
+	t. MONTH as month
+FROM
+	t_cabinet t,
+	(
+		SELECT
+			*
+		FROM
+			t_cabinet t
+		GROUP BY
+			t.`year`,
+			t.`month`
+		ORDER BY
+			t. YEAR DESC,
+			t.`month` DESC
+		LIMIT 1
+	) f
+WHERE
+	t.`year` = f. YEAR
+AND t.`month` = f. MONTH
+    </select>
+
+    <!--获取空间电力值-->
+    <select id="getBidScreenByUps" resultType="com.taiping.bean.energy.dto.BigScreenDto">
+SELECT
+	(
+		SELECT
+			sum(array_cabinet_design_load)
+		FROM
+			t_base_cabinet
+	) AS allPower,
+	sum(g.used_actual_power) AS usePower,
+	g.`year` AS YEAR,
+	g.`month` AS MONTH
+FROM
+	t_cabinet g,
+	(
+		SELECT
+			*
+		FROM
+			t_cabinet t
+		GROUP BY
+			t.`month`,
+			t.`year`
+		ORDER BY
+			t.`month` DESC,
+			t.`year` DESC
+		LIMIT 1
+	) f
+WHERE
+	g.`month` = f. MONTH
+AND g.`year` = f. YEAR
+    </select>
+
+</mapper>

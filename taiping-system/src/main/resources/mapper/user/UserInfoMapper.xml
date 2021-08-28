@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.user.dao.UserInfoDao">
+    <!--获取用户信息列表-->
+    <select id="getUserInfoList" resultType="com.taiping.entity.user.UserInfo">
+        SELECT * FROM  t_user_info
+    </select>
+
+    <!--根据用户id获取用户信息-->
+    <select id="getUserInfoById" resultType="com.taiping.entity.user.UserInfo" parameterType="String">
+        SELECT * FROM t_user_info WHERE user_id = #{userId}
+    </select>
+
+    <!--用户登录-->
+    <select id="userLogin" resultType="com.taiping.entity.user.UserInfo" parameterType="com.taiping.entity.user.UserInfo">
+        SELECT * FROM t_user_info WHERE user_name = #{userName} AND password = #{password}
+    </select>
+
+    <!--根据姓名获取用户信息-->
+    <select id="getUserInfoByRealName" resultType="com.taiping.entity.user.UserInfo" parameterType="String">
+        SELECT * FROM t_user_info WHERE user_real_name = #{userRealName}
+    </select>
+
+    <!--根据用户名获取用户-->
+    <select id="getUserInfoByUserName" resultType="com.taiping.entity.user.UserInfo" parameterType="String">
+        SELECT * FROM t_user_info WHERE user_name = #{userName}
+    </select>
+
+    <!--根据登录账号获取用户信息-->
+    <select id="getUserInfoByAccountName" resultType="com.taiping.entity.user.UserInfo" parameterType="String">
+        SELECT * FROM t_user_info WHERE account_name = #{accountName}
+    </select>
+
+    <!--根据员工编号获取用户信息-->
+    <select id="getUserInfoByUserNumber" resultType="com.taiping.entity.user.UserInfo" parameterType="String">
+        SELECT * FROM t_user_info WHERE user_number= #{userNumber}
+    </select>
+
+    <!--获取超级用户-->
+    <select id="getSuperUser" resultType="com.taiping.entity.user.UserInfo">
+        SELECT * FROM t_user_info WHERE is_super_user = 1
+    </select>
+
+    <!--添加用户-->
+    <insert id="addUser" parameterType="com.taiping.entity.user.UserInfo">
+        INSERT INTO t_user_info(user_id,user_name,account_name,user_real_name,user_number,password,
+        phone_number,email,user_group_id,is_super_user,is_deleted,create_user,create_time,update_user,update_time)
+        VALUES (#{userId},#{userName},#{accountName},#{userRealName},#{userNumber},#{password},
+        #{phoneNumber},#{email},#{userGroupId},#{isSuperUser},#{isDeleted},#{createUser},#{createTime},#{updateUser},
+        #{updateTime})
+    </insert>
+
+    <!--批量删除用户-->
+    <delete id="deleteUser" parameterType="java.util.List">
+        DELETE FROM t_user_info WHERE user_id IN
+        <foreach collection="list" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </delete>
+    <!--<update id="deleteUser" parameterType="java.util.List">-->
+        <!--UPDATE t_user_info SET is_delete = 1 WHERE user_id IN-->
+        <!--<foreach collection="list" item="userId" open="(" separator="," close=")">-->
+            <!--#{userId}-->
+        <!--</foreach>-->
+    <!--</update>-->
+
+    <!--更新用户信息-->
+    <update id="updateUser" parameterType="com.taiping.entity.user.UserInfo">
+        UPDATE t_user_info
+        <set>
+            <if test="userName != null and userName != ''">user_name = #{userName},</if>
+            <if test="accountName != null and accountName != ''">account_name = #{accountName},</if>
+            <if test="userRealName != null">user_real_name = #{userRealName},</if>
+            <if test="userGroupId != null">user_group_id = #{userGroupId},</if>
+            <if test="userNumber != null and userNumber != ''">user_number = #{userNumber},</if>
+            <if test="phoneNumber != null">phone_number = #{phoneNumber},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="isDeleted != null and isDeleted != ''">is_deleted = #{isDeleted},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+            <if test="updateTime != null and updateTime !=''">update_time = #{updateTime}</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <!--修改密码-->
+    <update id="modifyPassword" >
+        UPDATE t_user_info
+        <set>
+            <if test="password != null and password != ''">
+                password = #{password}
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.capacity.dao.cabling.ConnectRackDao">
+
+    <!-- 配线架信息返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.cabling.ConnectRack">
+        <id column="connect_rack_id" property="connectRackId" />
+        <result column="connect_rack_code" property="connectRackCode" />
+        <result column="eic_number" property="eicNumber" />
+        <result column="serial_number" property="serialNumber" />
+        <result column="connect_rack_name" property="connectRackName" />
+        <result column="description" property="description" />
+        <result column="manufacture" property="manufacture" />
+        <result column="logo" property="logo" />
+        <result column="serial_info" property="serialInfo" />
+        <result column="type" property="type" />
+        <result column="status" property="status" />
+        <result column="location" property="location" />
+        <result column="project" property="project" />
+        <result column="department" property="department" />
+        <result column="owner" property="owner" />
+        <result column="weight" property="weight" />
+        <result column="used_weight" property="usedWeight" />
+        <result column="asset_code" property="assetCode" />
+        <result column="racking_time" property="rackingTime" />
+        <result column="data_collection_time" property="dataCollectionTime" />
+        <result column="is_deleted" property="isDeleted" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <resultMap id="ConnectRackDto" extends="BaseResultMap" type="com.taiping.entity.cabling.ConnectRack">
+
+    </resultMap>
+
+
+
+
+    <!-- 配线架信息where条件 -->
+    <sql id="whereBySqlForConnectRack">
+        <!-- 选择多个配线架标识筛选条件 -->
+        <if test="bizCondition.connectRackList != null and bizCondition.connectRackList.size() > 0">
+            <if test="bizCondition.connectRackList.size() == 1">
+                AND connect_rack_code =
+                <foreach collection="bizCondition.connectRackList" item="connectRack">
+                    #{connectRack}
+                </foreach>
+            </if>
+            <if test="bizCondition.connectRackList.size() > 1">
+                AND connect_rack_code IN
+                <foreach collection="bizCondition.connectRackList" item="connectRack" open="(" close=")" separator=",">
+                    #{connectRack}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 选择多个序列号筛选条件 -->
+        <if test="bizCondition.serialNumberList != null and bizCondition.serialNumberList.size() > 0">
+            <if test="bizCondition.serialNumberList.size() == 1">
+                AND serial_number =
+                <foreach collection="bizCondition.serialNumberList" item="serialNumber">
+                    #{serialNumber}
+                </foreach>
+            </if>
+            <if test="bizCondition.serialNumberList.size() > 1">
+                AND serial_number IN
+                <foreach collection="bizCondition.serialNumberList" item="serialNumber" open="(" close=")" separator=",">
+                    #{serialNumber}
+                </foreach>
+            </if>
+        </if>
+
+        <!-- 时间筛选条件 -->
+        <if test="bizCondition.startTime != null and bizCondition.endTime != null">
+            <!--数据采集时间-->
+            AND data_collection_time between
+            #{bizCondition.startTime}
+            and
+            #{bizCondition.endTime}
+        </if>
+
+        <!--配线架code-->
+        <if test="bizCondition.connectRackCode != null and bizCondition.connectRackCode != ''">
+            AND connect_rack_code LIKE CONCAT('%',#{bizCondition.connectRackCode},'%')
+        </if>
+
+        <!--序列号-->
+        <if test="bizCondition.serialNumber != null and bizCondition.serialNumber != ''">
+            AND serial_number LIKE CONCAT('%',#{bizCondition.serialNumber},'%')
+        </if>
+    </sql>
+
+    <!--配线架排序条件公用sql-->
+    <sql id="orderBySql">
+        <!--排序-->
+        <if test="sortCondition.sortField != null and sortCondition.sortField != '' ">
+            <!--配线架编码-->
+            <if test="sortCondition.sortField == 'connectRackCode'">
+                ORDER BY connect_rack_code
+            </if>
+            <!--eic编号-->
+            <if test="sortCondition.sortField == 'eicNumber'">
+                ORDER BY eic_number
+            </if>
+            <!--序列号-->
+            <if test="sortCondition.sortField == 'serialNumber'">
+                ORDER BY serial_number
+            </if>
+            <!--配线架唯一标识-->
+            <if test="sortCondition.sortField == 'connectRackName'">
+                ORDER BY connect_rack_name
+            </if>
+            <!--配线架描述-->
+            <if test="sortCondition.sortField == 'description'">
+                ORDER BY description
+            </if>
+            <!--厂商-->
+            <if test="sortCondition.sortField == 'manufacture'">
+                ORDER BY manufacture
+            </if>
+            <!--品牌-->
+            <if test="sortCondition.sortField == 'logo'">
+                ORDER BY logo
+            </if>
+            <!--系列名称-->
+            <if test="sortCondition.sortField == 'serialInfo'">
+                ORDER BY serial_info
+            </if>
+            <!--型号-->
+            <if test="sortCondition.sortField == 'type'">
+                ORDER BY type
+            </if>
+            <!--状态-->
+            <if test="sortCondition.sortField == 'status'">
+                ORDER BY status
+            </if>
+            <!--位置-->
+            <if test="sortCondition.sortField == 'location'">
+                ORDER BY location
+            </if>
+            <!--所属项目-->
+            <if test="sortCondition.sortField == 'project'">
+                ORDER BY project
+            </if>
+            <!--所属部门-->
+            <if test="sortCondition.sortField == 'department'">
+                ORDER BY department
+            </if>
+            <!--所有者-->
+            <if test="sortCondition.sortField == 'owner'">
+                ORDER BY owner
+            </if>
+            <!--重量-->
+            <if test="sortCondition.sortField == 'weight'">
+                ORDER BY weight
+            </if>
+            <!--u位高度-->
+            <if test="sortCondition.sortField == 'usedWeight'">
+                ORDER BY used_weight
+            </if>
+            <!--资产编号-->
+            <if test="sortCondition.sortField == 'assetCode'">
+                ORDER BY asset_code
+            </if>
+            <!--上架时间-->
+            <if test="sortCondition.sortField == 'rackingTime'">
+                ORDER BY racking_time
+            </if>
+            <!--创建时间-->
+            <if test="sortCondition.sortField == 'createTime'">
+                ORDER BY create_time
+            </if>
+            <!-- 字段排序 -->
+            <if test="sortCondition.sortRule != null and sortCondition.sortRule != ''">
+                ${sortCondition.sortRule}
+            </if>
+        </if>
+    </sql>
+
+
+    <!--查询配线架列表-->
+    <select id="queryConnectRackList" resultMap="ConnectRackDto" parameterType="com.taiping.entity.QueryCondition">
+      select
+        connect_rack_id,
+        connect_rack_code,
+        eic_number,
+        serial_number,
+        connect_rack_name,
+        description,
+        manufacture,
+        logo,
+        serial_info,
+        type,
+        status,
+        location,
+        project,
+        department,
+        owner,
+        weight,
+        used_weight,
+        asset_code,
+        racking_time,
+        data_collection_time,
+        is_deleted,
+        create_user,
+        create_time,
+        update_user,
+        update_time
+        from t_connect_rack
+        where 1=1
+        <!-- 查询配线架列表 -->
+        <include refid="whereBySqlForConnectRack" />
+        <!-- 排序列表 -->
+        <include refid="orderBySql" />
+        <if test="pageCondition.beginNum != null and pageCondition.pageSize != null">
+            LIMIT
+            #{pageCondition.beginNum},#{pageCondition.pageSize}
+        </if>
+    </select>
+
+
+    <!--查询配线架数量-->
+    <select id="queryConnectRackCount" resultType="java.lang.Integer" parameterType="com.taiping.entity.QueryCondition">
+        select
+        count(*)
+        from t_connect_rack
+        where 1=1
+        <!-- 查询配线架列表 -->
+        <include refid="whereBySqlForConnectRack" />
+    </select>
+
+
+    <!-- 批量新增配线架信息 -->
+    <insert id="insertConnectRackBatch" parameterType="java.util.List">
+      insert into t_connect_rack
+      (
+        connect_rack_id,
+        connect_rack_code,
+        eic_number,
+        serial_number,
+        connect_rack_name,
+        description,
+        manufacture,
+        logo,
+        serial_info,
+        type,
+        status,
+        location,
+        project,
+        department,
+        owner,
+        weight,
+        used_weight,
+        asset_code,
+        racking_time,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+                #{item.connectRackId},
+                #{item.connectRackCode},
+                #{item.eicNumber},
+                #{item.serialNumber},
+                #{item.connectRackName},
+                #{item.description},
+                #{item.manufacture},
+                #{item.logo},
+                #{item.serialInfo},
+                #{item.type},
+                #{item.status},
+                #{item.location},
+                #{item.project},
+                #{item.department},
+                #{item.owner},
+                #{item.weight},
+                #{item.usedWeight},
+                #{item.assetCode},
+                #{item.rackingTime},
+                #{item.dataCollectionTime},
+                #{item.createUser},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增配线架信息 -->
+    <insert id="insertConnectRack" parameterType="com.taiping.entity.cabling.ConnectRack">
+      insert into t_connect_rack
+      (
+        connect_rack_id,
+        connect_rack_code,
+        eic_number,
+        serial_number,
+        connect_rack_name,
+        description,
+        manufacture,
+        logo,
+        serial_info,
+        type,
+        status,
+        location,
+        project,
+        department,
+        owner,
+        weight,
+        used_weight,
+        asset_code,
+        racking_time,
+        data_collection_time,
+        create_user,
+        create_time
+      )
+      values (
+        #{connectRackId},
+        #{connectRackCode},
+        #{eicNumber},
+        #{serialNumber},
+        #{connectRackName},
+        #{description},
+        #{manufacture},
+        #{logo},
+        #{serialInfo},
+        #{type},
+        #{status},
+        #{location},
+        #{project},
+        #{department},
+        #{owner},
+        #{weight},
+        #{usedWeight},
+        #{assetCode},
+        #{rackingTime},
+        #{dataCollectionTime},
+        #{createUser},
+        #{createTime}
+      )
+    </insert>
+
+    <!-- 删除配线架信息 -->
+    <delete id="deleteAllConnectRack">
+        delete from t_connect_rack
+    </delete>
+
+</mapper>

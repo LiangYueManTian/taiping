@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.problem.dao.TroubleTicketDao">
+
+    <resultMap id="StatisticsMapper" type="com.taiping.entity.problem.ProblemStatistics">
+        <result column="trouble_level" property="valueType"/>
+        <result column="num" property="valueNumber"/>
+    </resultMap>
+
+    <insert id="insertTroubleTicket" parameterType="com.taiping.entity.problem.TroubleTicket">
+        INSERT INTO t_trouble_ticket
+        (
+        ticket_id, ticket_code, report_person, trouble_source, status, create_person, create_time, trouble_time,
+        trouble_location, trouble_type, top_type, secondary_type, trouble_name, description, influence, urgency,
+        trouble_level, handle_description, solve_description, handle_group, handle_person, trouble_cause, solve_person,
+        solve_time, close_type, close_person, close_time, update_time, interrupt_duration, value_type, ticket_type
+        )
+        VALUES
+        (
+        #{ticketId}, #{ticketCode}, #{reportPerson}, #{troubleSource}, #{status},
+        #{createPerson}, #{createTime}, #{troubleTime}, #{troubleLocation}, #{troubleType},
+        #{topType}, #{secondaryType}, #{troubleName}, #{description}, #{influence},
+        #{urgency}, #{troubleLevel}, #{handleDescription}, #{solveDescription},
+        #{handleGroup}, #{handlePerson}, #{troubleCause}, #{solvePerson}, #{solveTime}, #{closeType},
+         #{closePerson}, #{closeTime}, #{updateTime}, #{interruptDuration}, #{valueType}, #{ticketType}
+        )
+    </insert>
+
+    <select id="selectTroubleTicketByCode" resultType="java.lang.Integer"
+            parameterType="com.taiping.entity.problem.TroubleTicket">
+        SELECT COUNT(ticket_id) FROM t_trouble_ticket
+        WHERE ticket_code = #{ticketCode}
+        <if test="ticketId != null and ticketId != ''">
+            AND ticket_id != #{ticketId}
+        </if>
+    </select>
+
+    <select id="queryTroubleTicketById" resultType="com.taiping.entity.problem.TroubleTicket" parameterType="string">
+        SELECT ticket_id, ticket_code, report_person, trouble_source, status, create_person, create_time, trouble_time,
+        trouble_location, trouble_type, top_type, secondary_type, trouble_name, description, influence, urgency,
+        trouble_level, handle_description, solve_description, handle_group, handle_person, trouble_cause, solve_person,
+        solve_time, close_type, close_person, close_time, update_time, interrupt_duration, value_type, ticket_type
+        FROM t_trouble_ticket
+        WHERE ticket_id = #{ticketId}
+    </select>
+
+    <update id="updateTroubleTicketById" parameterType="com.taiping.entity.problem.TroubleTicket">
+        UPDATE t_trouble_ticket SET ticket_code = #{ticketCode}, report_person = #{reportPerson},
+        trouble_source = #{troubleSource}, status = #{status}, create_person = #{createPerson},
+        create_time = #{createTime}, trouble_time = #{troubleTime}, trouble_location = #{troubleLocation},
+        trouble_type = #{troubleType}, top_type = #{topType}, secondary_type = #{secondaryType},
+        trouble_name = #{troubleName}, description = #{description}, influence = #{influence}, urgency = #{urgency},
+        trouble_level = #{troubleLevel}, handle_description = #{handleDescription},
+        solve_description = #{solveDescription}, handle_group = #{handleGroup}, handle_person = #{handlePerson},
+        trouble_cause = #{troubleCause}, solve_person = #{solvePerson}, solve_time = #{solveTime},
+        close_type = #{closeType}, close_person = #{closePerson}, close_time = #{closeTime},
+        update_time = #{updateTime}, interrupt_duration = #{interruptDuration}, ticket_type = #{ticketType}
+        WHERE ticket_id = #{ticketId}
+    </update>
+
+    <delete id="deleteTroubleTicket" parameterType="string">
+        DELETE FROM t_trouble_ticket WHERE ticket_id = #{ticketId} AND value_type = '1'
+    </delete>
+    
+    <select id="queryTroubleTicketInterrupt" resultType="com.taiping.entity.problem.TroubleTicket">
+        SELECT MIN(trouble_time) trouble_time, SUM(interrupt_duration) interrupt_duration FROM t_trouble_ticket
+    </select>
+
+    <!--批量导入故障单-->
+    <insert id="addTroubleTicketBatch" parameterType="java.util.List">
+        INSERT INTO t_trouble_ticket
+        (
+        ticket_id, ticket_code, report_person, trouble_source, status, create_person,create_time, trouble_time,
+        trouble_time_month, trouble_location, trouble_type, top_type, secondary_type, trouble_name, description,
+        influence, urgency, trouble_level, handle_description, solve_description, handle_group, handle_person,
+        trouble_cause, solve_person, solve_time, close_type,
+        close_person, close_time, update_time, interrupt_duration, ticket_type
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.ticketId}, #{item.ticketCode}, #{item.reportPerson}, #{item.troubleSource}, #{item.status},
+            #{item.createPerson}, #{item.createTime}, #{item.troubleTime}, #{item.troubleTimeMonth},
+            #{item.troubleLocation}, #{item.troubleType}, #{item.topType}, #{item.secondaryType}, #{item.troubleName},
+            #{item.description}, #{item.influence}, #{item.urgency}, #{item.troubleLevel}, #{item.handleDescription},
+            #{item.solveDescription}, #{item.handleGroup}, #{item.handlePerson}, #{item.troubleCause}, #{item.solvePerson},
+            #{item.solveTime}, #{item.closeType}, #{item.closePerson}, #{item.closeTime},
+            #{item.updateTime}, #{item.interruptDuration}, #{item.ticketType}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectTroubleTicketForLevel" parameterType="com.taiping.entity.problem.ProblemSelect"
+            resultMap="StatisticsMapper">
+        SELECT trouble_level, COUNT(ticket_id) num FROM t_trouble_ticket
+        WHERE trouble_time <![CDATA[ >= ]]> #{startTime}
+        AND trouble_time <![CDATA[ <= ]]> #{endTime}
+        GROUP BY trouble_level
+    </select>
+
+    <select id="selectTroubleTicketForTime" parameterType="com.taiping.entity.problem.ProblemSelect"
+            resultType="com.taiping.entity.problem.TroubleTicket">
+        SELECT ticket_id, trouble_time, trouble_time_month, top_type, secondary_type, trouble_level, ticket_type
+        FROM t_trouble_ticket
+        WHERE trouble_time <![CDATA[ >= ]]> #{startTime}
+        AND trouble_time <![CDATA[ <= ]]> #{endTime}
+    </select>
+
+    <select id="queryLatestTroubleTicketDate" resultType="java.lang.Long">
+        SELECT MAX(trouble_time)  FROM t_trouble_ticket
+    </select>
+
+    <select id="selectTroubleTicketList" resultType="com.taiping.entity.problem.TroubleTicket">
+        SELECT ticket_id, ticket_code, report_person, trouble_source, status, create_person, create_time, trouble_time,
+        trouble_location, trouble_type, top_type, secondary_type, trouble_name, description, influence, urgency,
+        trouble_level, handle_description, solve_description, handle_group, handle_person, trouble_cause, solve_person,
+        solve_time, close_type, close_person, close_time, update_time, interrupt_duration, value_type, ticket_type
+        FROM t_trouble_ticket
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'secondaryType' and filter.operator == 'in'">
+                            secondary_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'influence' and filter.operator == 'in'">
+                            influence IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'urgency' and filter.operator == 'in'">
+                            urgency IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'troubleLevel' and filter.operator == 'in'">
+                            trouble_level IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'ticketType' and filter.operator == 'eq'">
+                            ticket_type = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'troubleTime' and filter.operator == 'gte'">
+                            trouble_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'troubleTime' and filter.operator == 'lte'">
+                            trouble_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'ticketCode'">
+                    ORDER BY ticket_code
+                </when>
+                <when test="sort.sortField == 'createTime'">
+                    ORDER BY create_time
+                </when>
+                <when test="sort.sortField == 'troubleTime'">
+                    ORDER BY trouble_time
+                </when>
+                <when test="sort.sortField == 'influence'">
+                    ORDER BY influence
+                </when>
+                <when test="sort.sortField == 'urgency'">
+                    ORDER BY urgency
+                </when>
+                <when test="sort.sortField == 'troubleLevel'">
+                    ORDER BY trouble_level
+                </when>
+                <when test="sort.sortField == 'solveTime'">
+                    ORDER BY solve_time
+                </when>
+                <when test="sort.sortField == 'closeTime'">
+                    ORDER BY close_time
+                </when>
+                <when test="sort.sortField == 'updateTime'">
+                    ORDER BY update_time
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+    <select id="selectTroubleTicketListCount" resultType="java.lang.Integer">
+        SELECT COUNT(ticket_id) FROM t_trouble_ticket
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'secondaryType' and filter.operator == 'in'">
+                            secondary_type IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'influence' and filter.operator == 'in'">
+                            influence IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'urgency' and filter.operator == 'in'">
+                            urgency IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'troubleLevel' and filter.operator == 'in'">
+                            trouble_level IN
+                            <foreach collection="filter.filterValue" item="item" separator="," index="index" open="("
+                                     close=")">
+                                #{item}
+                            </foreach>
+                        </when>
+                        <when test="filter.filterField == 'ticketType' and filter.operator == 'eq'">
+                            ticket_type = #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'troubleTime' and filter.operator == 'gte'">
+                            trouble_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'troubleTime' and filter.operator == 'lte'">
+                            trouble_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

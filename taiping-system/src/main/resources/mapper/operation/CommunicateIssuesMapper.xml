@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.operation.dao.CommunicateIssuesDao">
+
+    <insert id="insertCommunicateIssues" parameterType="com.taiping.entity.operation.CommunicateIssues">
+        INSERT INTO t_communicate_issues
+        (
+        issues_id, issues_describe, location, property_people, plan_time,
+        actual_time, completion_status, communicate_content
+        )
+        VALUES
+        (
+        #{issuesId}, #{issuesDescribe}, #{location}, #{propertyPeople}, #{planTime},
+        #{actualTime}, #{completionStatus}, #{communicateContent}
+        )
+    </insert>
+
+    <update id="updateCommunicateIssues" parameterType="com.taiping.entity.operation.CommunicateIssues">
+        UPDATE t_communicate_issues
+        <set>
+            <if test="issuesDescribe != null and issuesDescribe != ''">
+                issues_describe = #{issuesDescribe},
+            </if>
+            <if test="location != null and location != ''">
+                location = #{location},
+            </if>
+            <if test="propertyPeople != null and propertyPeople != ''">
+                property_people = #{propertyPeople},
+            </if>
+            <if test="planTime != null">
+                plan_time = #{planTime},
+            </if>
+            <if test="actualTime != null">
+                actual_time = #{actualTime},
+            </if>
+            <if test="completionStatus != null and completionStatus != ''">
+                completion_status = #{completionStatus},
+            </if>
+            <if test="communicateContent != null and communicateContent != ''">
+                communicate_content = #{communicateContent},
+            </if>
+        </set>
+        WHERE issues_id = #{issuesId}
+    </update>
+
+    <delete id="deleteBatchCommunicateIssues" parameterType="list">
+        DELETE FROM t_communicate_issues
+        WHERE issues_id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="selectCommunicateIssuesById" parameterType="string"
+            resultType="com.taiping.entity.operation.CommunicateIssues">
+        SELECT
+        issues_id, issues_describe, location, property_people, plan_time,
+        actual_time, completion_status, communicate_content
+        FROM t_communicate_issues
+        WHERE issues_id = #{issuesId}
+    </select>
+
+    <select id="selectCommunicateIssuesList" resultType="com.taiping.entity.operation.CommunicateIssues">
+        SELECT
+        issues_id, issues_describe, location, property_people, plan_time,
+        actual_time, completion_status, communicate_content
+        FROM t_communicate_issues
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'issuesDescribe' and filter.operator == 'like'">
+                            issues_describe LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'location' and filter.operator == 'like'">
+                            location LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'propertyPeople' and filter.operator == 'like'">
+                            property_people LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'completionStatus' and filter.operator == 'like'">
+                            completion_status LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'communicateContent' and filter.operator == 'like'">
+                            communicate_content LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'planTime' and filter.operator == 'gte'">
+                            plan_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'planTime' and filter.operator == 'lte'">
+                            plan_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualTime' and filter.operator == 'gte'">
+                            actual_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualTime' and filter.operator == 'lte'">
+                            actual_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+        <if test="sort != null and sort.sortField != null and sort.sortField != ''">
+            <choose>
+                <when test="sort.sortField == 'issuesDescribe'">
+                    ORDER BY issues_describe
+                </when>
+                <when test="sort.sortField == 'location'">
+                    ORDER BY location
+                </when>
+                <when test="sort.sortField == 'propertyPeople'">
+                    ORDER BY property_people
+                </when>
+                <when test="sort.sortField == 'completionStatus'">
+                    ORDER BY completion_status
+                </when>
+                <when test="sort.sortField == 'communicateContent'">
+                    ORDER BY communicate_content
+                </when>
+                <when test="sort.sortField == 'planTime'">
+                    ORDER BY plan_time
+                </when>
+                <when test="sort.sortField == 'actualTime'">
+                    ORDER BY actual_time
+                </when>
+            </choose>
+            <choose>
+                <when test="sort.sortRule == 'desc'">
+                    DESC
+                </when>
+                <otherwise>
+                    ASC
+                </otherwise>
+            </choose>
+        </if>
+        LIMIT #{page.beginNum}, #{page.pageSize}
+    </select>
+
+
+    <select id="selectCommunicateIssuesListCount" resultType="java.lang.Integer">
+        SELECT COUNT(issues_id)
+        FROM t_communicate_issues
+        <where>
+            <if test="filterList != null and filterList.size() > 0">
+                <foreach collection="filterList" item="filter" separator="and">
+                    <choose>
+                        <when test="filter.filterField == 'issuesDescribe' and filter.operator == 'like'">
+                            issues_describe LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'location' and filter.operator == 'like'">
+                            location LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'propertyPeople' and filter.operator == 'like'">
+                            property_people LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'completionStatus' and filter.operator == 'like'">
+                            completion_status LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'communicateContent' and filter.operator == 'like'">
+                            communicate_content LIKE concat(concat('%',#{filter.filterValue}),'%')
+                        </when>
+                        <when test="filter.filterField == 'planTime' and filter.operator == 'gte'">
+                            plan_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'planTime' and filter.operator == 'lte'">
+                            plan_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualTime' and filter.operator == 'gte'">
+                            actual_time <![CDATA[ >= ]]> #{filter.filterValue}
+                        </when>
+                        <when test="filter.filterField == 'actualTime' and filter.operator == 'lte'">
+                            actual_time <![CDATA[ <= ]]> #{filter.filterValue}
+                        </when>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

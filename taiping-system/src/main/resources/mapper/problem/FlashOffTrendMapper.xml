@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.problem.dao.FlashOffTrendDao">
+    <insert id="insertFlashOffTrendBatch" parameterType="java.util.List">
+        INSERT INTO t_flash_off_trend
+        (
+        trend_id, trend_date, off_type, off_number, report_date
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.trendId}, #{item.trendDate}, #{item.offType}, #{item.offNumber}, #{item.reportDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryReport" parameterType="java.lang.Long" resultType="com.taiping.entity.problem.FlashOffTrend">
+        SELECT trend_id, trend_date, off_type, off_number, report_date
+        FROM t_flash_off_trend
+        WHERE report_date = #{date}
+        ORDER BY trend_date ASC, off_type ASC
+    </select>
+</mapper>

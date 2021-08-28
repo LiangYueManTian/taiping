@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.problem.dao.TroubleTrendDao">
+    <insert id="insertTroubleTrendBatch" parameterType="java.util.List">
+        INSERT INTO t_trouble_trend
+        (
+        trend_id, trend_date, top_type, very_low_number, low_number,
+        moderate_number, highe_number, very_highe_number, report_date
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.trendId}, #{item.trendDate}, #{item.topType}, #{item.veryLowNumber}, #{item.lowNumber},
+            #{item.moderateNumber}, #{item.highNumber}, #{item.veryHighNumber}, #{item.reportDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryReport" parameterType="java.lang.Long" resultType="com.taiping.entity.problem.TroubleTrend">
+        SELECT trend_id, trend_date, top_type, very_low_number, low_number,
+        moderate_number, highe_number, very_highe_number, report_date
+        FROM t_trouble_trend
+        WHERE report_date = #{date}
+        ORDER BY trend_date ASC, top_type ASC
+    </select>
+</mapper>

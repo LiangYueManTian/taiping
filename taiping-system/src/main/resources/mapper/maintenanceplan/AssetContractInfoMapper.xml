@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.maintenanceplan.dao.AssetContractInfoDao">
+    <!--批量插入资产合同信息-->
+    <insert id="batchInsertData" parameterType="java.util.List">
+        INSERT INTO t_asset_related_contract(id,asset_info_id,contract_id) VALUES
+        <foreach collection="list" item="data" index="index" separator=",">
+            (#{data.id},#{data.assetInfoId},#{data.contractId})
+        </foreach>
+    </insert>
+    <!--批量删除资产合同信息-->
+    <delete id="batchDeleteData" parameterType="java.util.List">
+        DELETE FROM t_asset_related_contract WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

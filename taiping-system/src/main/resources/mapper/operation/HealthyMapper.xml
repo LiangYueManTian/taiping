@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.operation.dao.HealthyDao">
+    <!--批量导入健康卡参数-->
+    <insert id="addHealthyParamBatch" parameterType="java.util.List">
+        INSERT INTO t_healthy_param
+        (
+        param_id, param_type, param_value
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.paramId}, #{item.paramType}, #{item.paramValue}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryHealthyParam" resultType="com.taiping.entity.operation.HealthyParam"
+    parameterType="string">
+        SELECT param_id, param_type, param_value FROM t_healthy_param
+        WHERE param_type =  #{paramType}
+    </select>
+
+    <select id="queryHealthyParamAll" resultType="com.taiping.entity.operation.HealthyParam"
+            parameterType="string">
+        SELECT param_id, param_type, param_value FROM t_healthy_param
+    </select>
+
+    <delete id="deleteHealthyParam">
+        DELETE FROM t_healthy_param
+    </delete>
+</mapper>

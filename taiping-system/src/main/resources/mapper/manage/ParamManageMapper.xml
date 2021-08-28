@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.manage.dao.ParamManageDao">
+
+    <resultMap id="BaseMapper" type="com.taiping.entity.manage.ParamManage">
+        <id column="param_id" property="paramId"/>
+        <result column="mode" property="mode"/>
+        <result column="param_type" property="paramType"/>
+        <result column="near_time" property="nearTime"/>
+    </resultMap>
+
+    <update id="updateParamManage" parameterType="com.taiping.entity.manage.ParamManage">
+        UPDATE t_param_manage
+        <set>
+            <if test="paramType != null and paramType != ''">
+                param_type = #{paramType},
+            </if>
+            <if test="nearTime != null">
+                near_time = #{nearTime}
+            </if>
+        </set>
+        WHERE mode = #{mode}
+    </update>
+
+    <select id="selectFormMode" parameterType="string" resultMap="BaseMapper">
+        SELECT param_type, near_time FROM t_param_manage
+        WHERE mode = #{mode}
+    </select>
+
+</mapper>

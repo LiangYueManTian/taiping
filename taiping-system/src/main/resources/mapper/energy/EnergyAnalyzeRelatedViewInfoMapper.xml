@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.taiping.biz.energy.dao.analyze.EnergyAnalyzeRelatedViewInfoDao">
+
+
+    <!-- 容量阈值关联显示图返回映射对象 -->
+    <resultMap id="BaseResultMap" type="com.taiping.entity.analyze.energy.EnergyAnalyzeRelatedViewInfo">
+        <id column="threshold_related_view_id" property="thresholdRelatedViewId" />
+        <result column="threshold_code" property="thresholdCode" />
+        <result column="view_type" property="viewType" />
+        <result column="data_code" property="dataCode" />
+        <result column="data_name" property="dataName" />
+        <result column="value" property="value" />
+        <result column="data_module" property="dataModule" />
+        <result column="module_type" property="moduleType" />
+        <result column="year" property="year" />
+        <result column="month" property="month" />
+        <result column="analyze_year" property="analyzeYear" />
+        <result column="analyze_month" property="analyzeMonth" />
+        <result column="analyze_time" property="analyzeTime" />
+        <result column="data_time" property="dataTime" />
+        <result column="is_deleted" property="isDeleted" />
+    </resultMap>
+
+    <!--全部的列-->
+    <sql id="AllColumnList">
+      threshold_related_view_id, threshold_code,    view_type,    data_code,    data_name,
+      value,      data_module,    module_type,
+      year,   month,   analyze_year,   analyze_month, analyze_time,
+      data_time,    is_deleted
+    </sql>
+
+    <!-- 查询图数据 -->
+    <select id="queryViewInfoList" resultMap="BaseResultMap" parameterType="com.taiping.bean.energy.parameter.analyze.EnergyAnalyzeRelatedViewListParameter">
+        select
+        <include refid="AllColumnList"/>
+        from t_energy_analyze_related_view_info
+        where 1=1
+        <!-- 统计年份 -->
+        <if test = "analyzeYear != null">
+          and analyze_year = #{analyzeYear}
+        </if>
+
+        <!-- 统计月份 -->
+        <if test = "analyzeMonth != null">
+            and analyze_month = #{analyzeMonth}
+        </if>
+
+        <!--阈值信息集合-->
+        <if test="thresholdCodeList != null and thresholdCodeList.size() > 0">
+            <if test="thresholdCodeList.size() == 1">
+                AND threshold_code =
+                <foreach collection="thresholdCodeList" item="thresholdCode">
+                    #{thresholdCode}
+                </foreach>
+            </if>
+            <if test="thresholdCodeList.size() > 1">
+                AND threshold_code IN
+                <foreach collection="thresholdCodeList" item="thresholdCode" open="(" close=")" separator=",">
+                    #{thresholdCode}
+                </foreach>
+            </if>
+        </if>
+        and is_deleted = 0
+        order by data_time asc
+    </select>
+
+
+    <!--查询阈值关联显示信息最新的数据信息-->
+    <select id="queryTopDataByTime" resultMap="BaseResultMap">
+        select
+        <include refid="AllColumnList"/>
+        from t_energy_analyze_related_view_info
+        where is_deleted = 0
+        order by data_collection_time desc
+        limit 1
+    </select>
+
+
+    <!-- 批量新增阈值关联显示信息 -->
+    <insert id="insertThresholdRelatedViewInfoBatch" parameterType="java.util.List">
+        insert into t_energy_analyze_related_view_info
+        (
+        threshold_related_view_id,
+        threshold_code,
+        view_type,
+        data_code,
+        data_name,
+        value,
+        data_module,
+        module_type,
+        year,
+        month,
+        analyze_year,
+        analyze_month,
+        analyze_time,
+        data_time
+        )
+        values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (
+            #{item.thresholdRelatedViewId},
+            #{item.thresholdCode},
+            #{item.viewType},
+            #{item.dataCode},
+            #{item.dataName},
+            #{item.value},
+            #{item.dataModule},
+            #{item.moduleType},
+            #{item.year},
+            #{item.month},
+            #{item.analyzeYear},
+            #{item.analyzeMonth},
+            #{item.analyzeTime},
+            #{item.dataTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 新增阈值关联显示信息 -->
+    <insert id="insertThresholdRelatedViewInfo" parameterType="com.taiping.entity.analyze.energy.EnergyAnalyzeRelatedViewInfo">
+      insert into t_energy_analyze_related_view_info
+      (
+        threshold_related_view_id,
+        threshold_code,
+        view_type,
+        data_code,
+        data_name,
+        value,
+        data_module,
+        module_type,
+        year,
+        month,
+        analyze_year,
+        analyze_month,
+        analyze_time,
+        data_time
+      )
+      values (
+        #{thresholdRelatedViewId},
+        #{thresholdCode},
+        #{viewType},
+        #{dataCode},
+        #{dataName},
+        #{value},
+        #{dataModule},
+        #{moduleType},
+        #{year},
+        #{month},
+        #{analyzeYear},
+        #{analyzeMonth},
+        #{analyzeTime},
+        #{dataTime},
+        #{isDeleted}
+      )
+    </insert>
+
+    <!-- 删除数据 -->
+    <delete id="deleteAnalyzeRelatedInfoBatch" parameterType="com.taiping.bean.energy.parameter.analyze.EnergyAnalyzeDeleteViewParameter">
+        delete from t_energy_analyze_related_view_info
+        where 1=1
+        <!--阈值信息集合-->
+        <if test="thresholdCodeList != null and thresholdCodeList.size() > 0">
+            <if test="thresholdCodeList.size() == 1">
+                AND threshold_code =
+                <foreach collection="thresholdCodeList" item="thresholdCode">
+                    #{thresholdCode}
+                </foreach>
+            </if>
+            <if test="thresholdCodeList.size() > 1">
+                AND threshold_code IN
+                <foreach collection="thresholdCodeList" item="thresholdCode" open="(" close=")" separator=",">
+                    #{thresholdCode}
+                </foreach>
+            </if>
+        </if>
+        <!--年份-->
+        <if test="analyzeYear != null ">
+          AND analyze_year = #{analyzeYear}
+        </if>
+        <!--月份-->
+        <if test="analyzeMonth != null">
+          AND analyze_month = #{analyzeMonth}
+        </if>
+        and is_deleted = 0
+    </delete>
+
+</mapper>
